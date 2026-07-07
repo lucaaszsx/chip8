@@ -113,8 +113,8 @@ void chip8_loop(struct Chip8 *chip) {
 
 // -- chip8 internals
 void chip8_cleanup(struct Chip8 *chip) {
-    for (size_t reg = 0; reg < 16; reg++) chip->v[reg] = 0x00;
-    for (size_t i = 0; i < 16; i++) chip->stack[i] = 0;
+    for (size_t reg = 0; reg < sizeof(chip->v); reg++) chip->v[reg] = 0x00;
+    for (size_t i = 0; i < sizeof(chip->stack) / sizeof(uint16_t); i++) chip->stack[i] = 0;
 
     chip8_mem_init(chip);
 }
