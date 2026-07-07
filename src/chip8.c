@@ -9,13 +9,17 @@
 #define OPCODE_CLS 0x00e0
 #define OPCODE_RTS 0x00ee
 
-#define OPCODE_CAT_SYS    0x0
-#define OPCODE_CAT_JMP    0x1
-#define OPCODE_CAT_JSR    0x2
-#define OPCODE_CAT_MOV    0x6
-#define OPCODE_CAT_ADD    0x7
-#define OPCODE_CAT_MVI    0xa
-#define OPCODE_CAT_SPRITE 0xd
+#define OPCODE_CAT_SYS      0x0
+#define OPCODE_CAT_JMP      0x1
+#define OPCODE_CAT_JSR      0x2
+#define OPCODE_CAT_SKEQ_IMM 0x3
+#define OPCODE_CAT_SKNE_IMM 0x4
+#define OPCODE_CAT_SKEQ_REG 0x5
+#define OPCODE_CAT_MOV      0x6
+#define OPCODE_CAT_ADD      0x7
+#define OPCODE_CAT_SKNE_REG 0x9
+#define OPCODE_CAT_MVI      0xa
+#define OPCODE_CAT_SPRITE   0xd
 
 // -- addresses
 const uint16_t PROG_ADDRESS = 0x0200;
@@ -145,6 +149,18 @@ void chip8_cycle(struct Chip8 *chip) {
             chip8_isa_jmp(chip, opcode);
             break;
 
+        case OPCODE_CAT_SKEQ_IMM:
+            chip8_isa_skeq_immediate(chip, opcode);
+            break;
+
+        case OPCODE_CAT_SKNE_IMM:
+            chip8_isa_skne_immediate(chip, opcode);
+            break;
+
+        case OPCODE_CAT_SKEQ_REG:
+            chip8_isa_skne_reg(chip, opcode);
+            break;
+
         case OPCODE_CAT_JSR:
             chip8_isa_jsr(chip, opcode);
             break;
@@ -155,6 +171,10 @@ void chip8_cycle(struct Chip8 *chip) {
 
         case OPCODE_CAT_ADD:
             chip8_isa_add(chip, opcode);
+            break;
+
+        case OPCODE_CAT_SKNE_REG:
+            chip8_isa_skne_reg(chip, opcode);
             break;
 
         case OPCODE_CAT_MVI:
