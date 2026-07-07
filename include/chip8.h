@@ -27,6 +27,9 @@ struct Chip8 {
     // stack
     uint16_t stack[16];
 
+    // current stack index
+    size_t stack_index;
+    
     // display
     struct Chip8Display *display;
 };
