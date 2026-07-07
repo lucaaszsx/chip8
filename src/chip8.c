@@ -189,7 +189,7 @@ void chip8_mem_init(struct Chip8 *chip) {
         chip8_mem_write(chip, addr, 0x00);
 }
 
-void chip8_mem_write(struct Chip8 *chip, const uint16_t addr, const uint8_t word) {
+void chip8_mem_write(struct Chip8 *chip, uint16_t addr, uint8_t word) {
     if (addr > 0xffff) {
         printf("attempt to access an out-of-range memory address\n");
         exit(1);
@@ -198,7 +198,7 @@ void chip8_mem_write(struct Chip8 *chip, const uint16_t addr, const uint8_t word
     chip->mem[addr] = word;
 }
 
-void chip8_mem_write_many(struct Chip8 *chip, const uint16_t start_addr, const uint8_t *words, const size_t length) {
+void chip8_mem_write_many(struct Chip8 *chip, uint16_t start_addr, const uint8_t *words, size_t length) {
     for (size_t i = 0; i < length; i++)
         chip8_mem_write(chip, start_addr + i, words[i]);
 }
