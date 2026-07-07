@@ -25,7 +25,7 @@ void print_mem(struct Chip8 *chip, size_t start_offset, size_t end_offset, size_
 
 int main() {
     struct Chip8 chip;
-    chip8_init(&chip);
+    chip8_init(&chip, 1000);
     print_chip(&chip, "Chip started");
     
     uint8_t program[] = {

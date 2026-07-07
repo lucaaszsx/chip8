@@ -1,6 +1,10 @@
 #include "chip8.h"
 #include "chip8_isa.h"
+#include "timer.h"
+#include <bits/time.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <time.h>
 
 #define OPCODE_CLS    0x00e0
 #define OPCODE_JMP    0x1000
@@ -34,6 +38,7 @@ const uint8_t CHIP8_STD_FONT[] = {
 };
 
 // -- internals
+static void chip8_cycle(struct Chip8 *chip);
 static uint8_t chip8_fetch_byte(struct Chip8 *chip);
 static uint16_t chip8_fetch_word(struct Chip8 *chip);
 
@@ -43,16 +48,17 @@ static void chip8_mem_write_many(struct Chip8 *chip, uint16_t start_addr, const 
 static uint8_t chip8_mem_read(const struct Chip8 *chip, uint16_t addr);
 
 // -- public chip8 interface
-void chip8_init(struct Chip8 *chip) {
-    chip8_mem_init(chip);
-
-    // writes the standard font in memory
-    chip8_mem_write_many(chip, FONT_ADDRESS, CHIP8_STD_FONT, sizeof(CHIP8_STD_FONT) / sizeof(uint8_t));
-    
+void chip8_init(struct Chip8 *chip, size_t ips) {
+    chip->ips = ips;
     chip->pc = PROG_ADDRESS;
     chip->i = 0x0000;
 
+    // cleanup general purpose registers
     for (size_t reg = 0; reg < 16; reg++) chip->v[reg] = 0x00;
+
+    // cleanup memory and writes the standard font to it
+    chip8_mem_init(chip);
+    chip8_mem_write_many(chip, FONT_ADDRESS, CHIP8_STD_FONT, sizeof(CHIP8_STD_FONT) / sizeof(uint8_t));
 }
 
 void chip8_load_prog(struct Chip8 *chip, const uint8_t *prog, size_t prog_length) {
@@ -60,36 +66,49 @@ void chip8_load_prog(struct Chip8 *chip, const uint8_t *prog, size_t prog_length
 }
 
 void chip8_loop(struct Chip8 *chip) {
-    uint16_t opcode;
+    const uint64_t interval = 1000000000 / chip->ips; // instructions per ns
+    uint64_t next_tick = get_ticks();
+    bool running = true;
 
     while (chip->pc != 0) {
-        opcode = chip8_fetch_word(chip);
-        if (opcode == OPCODE_CLS) {
-            printf("found clear screen\n");
-            break;
-        }
-
-        switch (opcode & 0xf000) {
-            case OPCODE_JMP:
-                chip8_isa_jmp(chip, opcode);
-                break;
-            case OPCODE_MOV:
-                chip8_isa_mov(chip, opcode);
-                break;
-            case OPCODE_ADD:
-                chip8_isa_add(chip, opcode);
-                break;
-            case OPCODE_MVI:
-                chip8_isa_mvi(chip, opcode);
-                break;
-            case OPCODE_SPRITE:
-                chip8_isa_sprite(chip, opcode);
-                break;
+        if (get_ticks() >= next_tick) {
+            chip8_cycle(chip);
+            next_tick += interval;
         }
     }
 }
 
 // -- chip8 internals
+void chip8_cycle(struct Chip8 *chip) {
+    uint16_t opcode = chip8_fetch_word(chip);
+
+    if (opcode == OPCODE_CLS) {
+        printf("found clear screen\n");
+        return;
+    }
+
+    switch (opcode & 0xf000) {
+        case OPCODE_JMP:
+            chip8_isa_jmp(chip, opcode);
+            break;
+        case OPCODE_MOV:
+            chip8_isa_mov(chip, opcode);
+            break;
+        case OPCODE_ADD:
+            chip8_isa_add(chip, opcode);
+            break;
+        case OPCODE_MVI:
+            chip8_isa_mvi(chip, opcode);
+            break;
+        case OPCODE_SPRITE:
+            chip8_isa_sprite(chip, opcode);
+            break;
+        default:
+            // printf("invalid opcode %x", opcode);
+            break;
+    }
+}
+
 uint8_t chip8_fetch_byte(struct Chip8 *chip) {
     uint8_t byte = chip8_mem_read(chip, chip->pc);
     chip->pc = (chip->pc + 1) & 0xfff;
@@ -113,7 +132,7 @@ void chip8_mem_write(struct Chip8 *chip, const uint16_t addr, const uint8_t word
         printf("attempt to access an out-of-range memory address\n");
         exit(1);
     }
-    
+
     chip->mem[addr] = word;
 }
 

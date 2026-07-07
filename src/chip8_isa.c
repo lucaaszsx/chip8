@@ -4,6 +4,7 @@
 
 static uint8_t chip8_X(uint16_t opcode);
 static uint8_t chip8_Y(uint16_t opcode);
+static uint8_t chip8_N(uint16_t opcode);
 static uint8_t chip8_NN(uint16_t opcode);
 static uint16_t chip8_NNN(uint16_t opcode);
 
