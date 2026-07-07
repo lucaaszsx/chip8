@@ -1,0 +1,5 @@
+# Build Files
+build/
+*.o
+chip8
+compile_commands.json
