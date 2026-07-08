@@ -44,35 +44,6 @@ static void chip8_mem_write(struct Chip8 *chip, uint16_t addr, uint8_t word);
 static void chip8_mem_write_many(struct Chip8 *chip, uint16_t start_addr, const uint8_t *words, size_t length);
 static uint8_t chip8_mem_read(const struct Chip8 *chip, uint16_t addr);
 
-static void print_state(struct Chip8 *chip) {
-    printf("\033[2J\033[H");
-    printf("---------- Chip-8 ----------\n");
-    printf("REGISTERS:\n");
-    printf("  PC (program counter): 0x%x\n", chip->pc);
-    printf("  I (index): 0x%x\n", chip->i);
-    printf("  General Purpose Registers (GPR):\n");
-
-    for (size_t i = 0; i < sizeof(chip->v); i++) {
-        if (i % 8 == 0) {
-            if (i > 0) printf("\n");
-            printf("    ");
-        }
-        
-        printf("V%zu=0x%x    ", i, chip->v[i]);
-    }
-    printf("\n");
-
-    printf("MEMORY (512..768):\n");
-    for (size_t i = ROM_ADDRESS; i < 768; i++) {
-        if (i % 64 == 0) {
-            if (i > 0) printf("\n");
-            printf("  ");
-        }
-        printf("%x ", chip->mem[i]);
-    }
-    printf("\n");
-}
-
 // -- public chip8 interface
 void chip8_init(struct Chip8 *chip, size_t ips) {
     chip->ips = ips;
@@ -98,7 +69,6 @@ void chip8_loop(struct Chip8 *chip) {
         if (get_ticks() >= next_tick) {
             chip8_cycle(chip);
             next_tick += interval;
-            print_state(chip);
         }
     }
 }
@@ -206,6 +176,8 @@ void chip8_cycle(struct Chip8 *chip) {
             // printf("invalid opcode %x", opcode);
             break;
     }
+
+    if (chip->on_cycle) chip->on_cycle(chip);
 }
 
 uint8_t chip8_fetch_byte(struct Chip8 *chip) {

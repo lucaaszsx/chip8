@@ -32,6 +32,9 @@ struct Chip8 {
     
     // display
     struct Chip8Display *display;
+
+    // callback to call every cpu cycle
+    void (*on_cycle)(struct Chip8*);
 };
 
 // chip8 management
