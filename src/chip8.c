@@ -63,7 +63,7 @@ static void print_state(struct Chip8 *chip) {
     printf("\n");
 
     printf("MEMORY (512..768):\n");
-    for (size_t i = 512; i < 768; i++) {
+    for (size_t i = ROM_ADDRESS; i < 768; i++) {
         if (i % 64 == 0) {
             if (i > 0) printf("\n");
             printf("  ");
@@ -133,19 +133,19 @@ void chip8_cycle(struct Chip8 *chip) {
             break;
 
         case 0x2:
-            chip8_isa_skeq_immediate(chip, opcode);
+            chip8_isa_jsr(chip, opcode);
             break;
 
         case 0x3:
-            chip8_isa_skne_immediate(chip, opcode);
+            chip8_isa_skeq_immediate(chip, opcode);
             break;
 
         case 0x4:
-            chip8_isa_skne_reg(chip, opcode);
+            chip8_isa_skne_immediate(chip, opcode);
             break;
 
         case 0x5:
-            chip8_isa_jsr(chip, opcode);
+            chip8_isa_skne_reg(chip, opcode);
             break;
 
         case 0x6:
