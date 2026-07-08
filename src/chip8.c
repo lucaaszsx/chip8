@@ -9,20 +9,8 @@
 #define OPCODE_CLS 0x00e0
 #define OPCODE_RTS 0x00ee
 
-#define OPCODE_CAT_SYS      0x0
-#define OPCODE_CAT_JMP      0x1
-#define OPCODE_CAT_JSR      0x2
-#define OPCODE_CAT_SKEQ_IMM 0x3
-#define OPCODE_CAT_SKNE_IMM 0x4
-#define OPCODE_CAT_SKEQ_REG 0x5
-#define OPCODE_CAT_MOV      0x6
-#define OPCODE_CAT_ADD      0x7
-#define OPCODE_CAT_SKNE_REG 0x9
-#define OPCODE_CAT_MVI      0xa
-#define OPCODE_CAT_SPRITE   0xd
-
 // -- addresses
-const uint16_t PROG_ADDRESS = 0x0200;
+const uint16_t ROM_ADDRESS = 0x0200;
 const uint16_t FONT_ADDRESS = 0x50;
 
 // -- constants
@@ -88,17 +76,17 @@ static void print_state(struct Chip8 *chip) {
 // -- public chip8 interface
 void chip8_init(struct Chip8 *chip, size_t ips) {
     chip->ips = ips;
-    chip->pc = PROG_ADDRESS;
+    chip->pc = ROM_ADDRESS;
     chip->i = 0x0000;
     chip->stack_index = 0;
 
     // cleanup and then writes the standard font in memory
     chip8_cleanup(chip);
-    chip8_mem_write_many(chip, FONT_ADDRESS, CHIP8_STD_FONT, sizeof(CHIP8_STD_FONT) / sizeof(uint8_t));
+    chip8_mem_write_many(chip, FONT_ADDRESS, CHIP8_STD_FONT, sizeof(CHIP8_STD_FONT));
 }
 
 void chip8_load_prog(struct Chip8 *chip, const uint8_t *prog, size_t prog_length) {
-    chip8_mem_write_many(chip, PROG_ADDRESS, prog, prog_length);
+    chip8_mem_write_many(chip, ROM_ADDRESS, prog, prog_length);
 }
 
 void chip8_loop(struct Chip8 *chip) {
@@ -133,7 +121,7 @@ void chip8_cycle(struct Chip8 *chip) {
 
     // gets the opcode category with the mask
     switch ((opcode & 0xf000) >> 12) {
-        case OPCODE_CAT_SYS: {
+        case 0x0: {
             switch (opcode) {
                 case OPCODE_CLS:
                     chip8_isa_cls(chip);
@@ -145,43 +133,43 @@ void chip8_cycle(struct Chip8 *chip) {
             break;
         }
 
-        case OPCODE_CAT_JMP:
+        case 0x1:
             chip8_isa_jmp(chip, opcode);
             break;
 
-        case OPCODE_CAT_SKEQ_IMM:
+        case 0x2:
             chip8_isa_skeq_immediate(chip, opcode);
             break;
 
-        case OPCODE_CAT_SKNE_IMM:
+        case 0x3:
             chip8_isa_skne_immediate(chip, opcode);
             break;
 
-        case OPCODE_CAT_SKEQ_REG:
+        case 0x4:
             chip8_isa_skne_reg(chip, opcode);
             break;
 
-        case OPCODE_CAT_JSR:
+        case 0x5:
             chip8_isa_jsr(chip, opcode);
             break;
 
-        case OPCODE_CAT_MOV:
+        case 0x6:
             chip8_isa_mov(chip, opcode);
             break;
 
-        case OPCODE_CAT_ADD:
+        case 0x7:
             chip8_isa_add(chip, opcode);
             break;
 
-        case OPCODE_CAT_SKNE_REG:
+        case 0x9:
             chip8_isa_skne_reg(chip, opcode);
             break;
 
-        case OPCODE_CAT_MVI:
+        case 0xa:
             chip8_isa_mvi(chip, opcode);
             break;
 
-        case OPCODE_CAT_SPRITE:
+        case 0xd:
             chip8_isa_sprite(chip, opcode);
             break;
 
