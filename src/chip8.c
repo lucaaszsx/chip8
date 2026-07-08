@@ -114,11 +114,6 @@ void chip8_cleanup(struct Chip8 *chip) {
 void chip8_cycle(struct Chip8 *chip) {
     uint16_t opcode = chip8_fetch_word(chip);
 
-    if (opcode == OPCODE_CLS) {
-        chip8_isa_cls(chip);
-        return;
-    }
-
     // gets the opcode category with the mask
     switch ((opcode & 0xf000) >> 12) {
         case 0x0: {
