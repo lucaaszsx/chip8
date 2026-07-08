@@ -35,7 +35,7 @@ static void on_cycle(struct Chip8 *chip) {
             if (i > 512) len += snprintf(buf + len, sizeof(buf) - len, "\n");
             len += snprintf(buf + len, sizeof(buf) - len, "  ");
         }
-        len += snprintf(buf + len, sizeof(buf) - len, "%02x ", chip->mem[i]);
+        len += snprintf(buf + len, sizeof(buf) - len, i == chip->pc ? "\033[31;1;4m%02x\033[0m " : "%02x ", chip->mem[i]);
     }
     len += snprintf(buf + len, sizeof(buf) - len, "\n\033[J");
 
@@ -45,18 +45,20 @@ static void on_cycle(struct Chip8 *chip) {
 
 int main() {
     struct Chip8 chip;
-    chip8_init(&chip, 1000);
+    chip8_init(&chip, 5);
     
     chip.on_cycle = on_cycle;
     
     uint8_t program[] = {
-        0x60, 0x01, // [0x200] 6XKK (mov VX, KK) -> 6001 (mov V0, 0x01)
-        0x30, 0x2a, // [0x202] 3XKK (skeq VX, KK) -> 307f (skeq V0, 0xff)
-        0x22, 0x0a, // [0x204] 2KKK (jsr KKK) -> 220a (jsr 0x20a)
-        0x81, 0x00, // [0x206] 8XY0 (mov VX, VY) -> 8100 (mov V1, V0)
-        0x12, 0x02, // [0x208] 1KKK (jmp KKK) -> 1202 (jmp 0x202)
-        0x70, 0x01, // [0x20a] 7XKK (add VX, KK) -> 7001 (add V0, 0x01)
-        0x00, 0xee, // [0x20c] 00ee -> rts
+        0x60, 0x03, // [0x200] 6XKK (mov VX, KK) -> 6001 (mov V0, 0x01)
+        0x61, 0x14, // [0x202] 6XKK -> 6114
+        0x30, 0x0a, // [0x204] 3XKK (skeq VX, KK) -> 300a (skeq V0, 0x0a)
+        0x22, 0x0e, // [0x206] 2KKK (jsr KKK) -> 220c (jsr 0x20c)
+        0x40, 0x0a, // [0x208] 4XKK (skne VX, KK) -> 400a (skne V0, 0x0a)
+        0x80, 0x17, // [0x20a] 8XY5 (rsb VX, VY) -> 8015 (rsb V0, V1)
+        0x12, 0x04, // [0x20c] 1KKK (jmp KKK) -> 1200 (jmp 0x204)
+        0x70, 0x01, // [0x20e] 7XKK (add VX, KK) -> 7001 (add V0, 0x01)
+        0x00, 0xee, // [0x210] 00ee -> rts
     };
     chip8_load_prog(&chip, program, sizeof(program) / sizeof(uint8_t));
     chip8_loop(&chip);
