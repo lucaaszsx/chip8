@@ -31,7 +31,6 @@ void chip8_isa_jsr(struct Chip8 *chip, uint16_t opcode) {
 void chip8_isa_skeq_immediate(struct Chip8 *chip, uint16_t opcode) {
     uint8_t reg = chip8_X(opcode);
     if (chip->v[reg] == chip8_NN(opcode)) chip->pc += 2;
-    printf("  chip8_isa_skeq_immediate: 0x%x -> reg %d\n", opcode, reg);
 }
 
 void chip8_isa_skne_immediate(struct Chip8 *chip, uint16_t opcode) {
@@ -45,13 +44,35 @@ void chip8_isa_skeq_reg(struct Chip8 *chip, uint16_t opcode) {
     if (chip->v[regX] == chip->v[regY]) chip->pc += 2;
 }
 
-void chip8_isa_mov(struct Chip8 *chip, uint16_t opcode) {
-    chip->v[chip8_X(opcode)] = chip8_NN(opcode);
+void chip8_isa_mov(struct Chip8 *chip, uint16_t opcode, bool is_reg) {
+    uint8_t regX = chip8_X(opcode);
+    if (is_reg) chip->v[regX] = chip->v[chip8_Y(opcode)];
+    else chip->v[regX] = chip8_NN(opcode);
 }
 
-void chip8_isa_add(struct Chip8 *chip, uint16_t opcode) {
-    uint8_t reg = chip8_X(opcode);
-    chip->v[reg] = chip->v[reg] + chip8_NN(opcode);
+void chip8_isa_add(struct Chip8 *chip, uint16_t opcode, bool is_reg) {
+    uint8_t regX = chip8_X(opcode);
+    if (is_reg) chip->v[regX] = chip->v[regX] + chip->v[chip8_Y(opcode)];
+    else chip->v[regX] = chip->v[regX] + chip8_NN(opcode);
+}
+
+void chip8_isa_sub(struct Chip8 *chip, uint16_t opcode, bool vx_first) {
+    uint8_t regX = chip8_X(opcode);
+    uint8_t regY = chip8_Y(opcode);
+    if (vx_first) chip->v[regX] -= chip->v[regY];
+    else chip->v[regX] = chip->v[regY] - chip->v[regX];
+}
+
+void chip8_isa_or(struct Chip8 *chip, uint16_t opcode) {
+    chip->v[chip8_X(opcode)] |= chip->v[chip8_Y(opcode)];
+}
+
+void chip8_isa_and(struct Chip8 *chip, uint16_t opcode) {
+    chip->v[chip8_X(opcode)] &= chip->v[chip8_Y(opcode)];
+}
+
+void chip8_isa_xor(struct Chip8 *chip, uint16_t opcode) {
+    chip->v[chip8_X(opcode)] ^= chip->v[chip8_Y(opcode)];
 }
 
 void chip8_isa_skne_reg(struct Chip8 *chip, uint16_t opcode) {

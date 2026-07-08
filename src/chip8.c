@@ -145,16 +145,50 @@ void chip8_cycle(struct Chip8 *chip) {
             break;
 
         case 0x5:
-            chip8_isa_skne_reg(chip, opcode);
+            chip8_isa_skeq_reg(chip, opcode);
             break;
 
         case 0x6:
-            chip8_isa_mov(chip, opcode);
+            chip8_isa_mov(chip, opcode, false);
             break;
 
         case 0x7:
-            chip8_isa_add(chip, opcode);
+            chip8_isa_add(chip, opcode, false);
             break;
+
+        case 0x8: {
+            switch (opcode & 0x000f) {
+                case 0x0:
+                    chip8_isa_mov(chip, opcode, true);
+                    break;
+
+                case 0x1:
+                    chip8_isa_or(chip, opcode);
+                    break;
+
+                case 0x2:
+                    chip8_isa_and(chip, opcode);
+                    break;
+
+                case 0x3:
+                    chip8_isa_xor(chip, opcode);
+                    break;
+
+                case 0x4:
+                    chip8_isa_add(chip, opcode, true);
+                    break;
+
+                case 0x5:
+                    chip8_isa_sub(chip, opcode, true);
+                    break;
+
+                case 0x7:
+                    chip8_isa_sub(chip, opcode, false);
+                    break;
+            }
+            
+            break;
+        }
 
         case 0x9:
             chip8_isa_skne_reg(chip, opcode);
