@@ -210,7 +210,7 @@ void chip8_mem_init(struct Chip8 *chip) {
 }
 
 void chip8_mem_write(struct Chip8 *chip, uint16_t addr, uint8_t word) {
-    if (addr > 0xffff) {
+    if (addr > 0xfff) {
         printf("attempt to access an out-of-range memory address\n");
         exit(1);
     }
