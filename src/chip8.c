@@ -149,11 +149,11 @@ void chip8_cycle(struct Chip8 *chip) {
                     break;
 
                 case 0x5:
-                    chip8_isa_sub(chip, opcode, true);
+                    chip8_isa_sub(chip, opcode, false);
                     break;
 
                 case 0x7:
-                    chip8_isa_sub(chip, opcode, false);
+                    chip8_isa_sub(chip, opcode, true);
                     break;
             }
             

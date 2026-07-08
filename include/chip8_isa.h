@@ -13,7 +13,7 @@ void chip8_isa_skne_immediate(struct Chip8 *chip, uint16_t opcode);
 void chip8_isa_skeq_reg(struct Chip8 *chip, uint16_t opcode);
 void chip8_isa_mov(struct Chip8 *chip, uint16_t opcode, bool is_reg);
 void chip8_isa_add(struct Chip8 *chip, uint16_t opcode, bool is_reg);
-void chip8_isa_sub(struct Chip8 *chip, uint16_t opcode, bool vx_first);
+void chip8_isa_sub(struct Chip8 *chip, uint16_t opcode, bool rsb);
 void chip8_isa_or(struct Chip8 *chip, uint16_t opcode);
 void chip8_isa_and(struct Chip8 *chip, uint16_t opcode);
 void chip8_isa_xor(struct Chip8 *chip, uint16_t opcode);
