@@ -62,8 +62,8 @@ static void print_state(struct Chip8 *chip) {
     }
     printf("\n");
 
-    printf("MEMORY (512..1024):\n");
-    for (size_t i = 512; i < 1024; i++) {
+    printf("MEMORY (512..768):\n");
+    for (size_t i = 512; i < 768; i++) {
         if (i % 64 == 0) {
             if (i > 0) printf("\n");
             printf("  ");
