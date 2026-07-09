@@ -1,8 +1,8 @@
-#include "chip8_isa.h"
-#include "display.h"
 #include "memory.h"
 #include <stdint.h>
 #include <stdio.h>
+#include "display.h"
+#include "isa.h"
 
 static uint8_t chip8_X(uint16_t opcode);
 static uint8_t chip8_Y(uint16_t opcode);
