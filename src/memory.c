@@ -1,9 +1,9 @@
 #include <stdio.h>
+#include <string.h>
 #include "memory.h"
 
 void chip8_mem_reset(struct Chip8 *chip) {
-    for (uint16_t addr = 0x0000; addr < sizeof(chip->mem); addr++)
-        chip8_mem_write(chip, addr, 0x00);
+    memset(chip->mem, 0x00, sizeof(chip->mem));
 }
 
 void chip8_mem_write(struct Chip8 *chip, uint16_t addr, uint8_t word) {
