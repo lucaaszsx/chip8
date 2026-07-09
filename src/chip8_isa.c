@@ -1,4 +1,6 @@
 #include "chip8_isa.h"
+#include "display.h"
+#include "memory.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -9,8 +11,7 @@ static uint8_t chip8_NN(uint16_t opcode);
 static uint16_t chip8_NNN(uint16_t opcode);
 
 void chip8_isa_cls(struct Chip8 *chip) {
-    perror("cannot clear screen yet");
-    exit(1);
+    chip8_display_clear(chip->display);
 }
 
 void chip8_isa_rts(struct Chip8 *chip) {
@@ -29,20 +30,18 @@ void chip8_isa_jsr(struct Chip8 *chip, uint16_t opcode) {
 }
 
 void chip8_isa_skeq_immediate(struct Chip8 *chip, uint16_t opcode) {
-    uint8_t reg = chip8_X(opcode);
-    if (chip->v[reg] == chip8_NN(opcode)) chip->pc += 2;
+    if (chip->v[chip8_X(opcode)] == chip8_NN(opcode))
+        chip->pc += 2;
 }
 
 void chip8_isa_skne_immediate(struct Chip8 *chip, uint16_t opcode) {
-    uint8_t reg = chip8_X(opcode);
-    if (chip->v[reg] != chip8_NN(opcode)) chip->pc += 2;
+    if (chip->v[chip8_X(opcode)] != chip8_NN(opcode))
+        chip->pc += 2;
 }
 
 void chip8_isa_skeq_reg(struct Chip8 *chip, uint16_t opcode) {
-    uint8_t regX = chip8_X(opcode);
-    uint8_t regY = chip8_Y(opcode);
-    
-    if (chip->v[regX] == chip->v[regY]) chip->pc += 2;
+    if (chip->v[chip8_X(opcode)] == chip->v[chip8_Y(opcode)])
+        chip->pc += 2;
 }
 
 void chip8_isa_mov(struct Chip8 *chip, uint16_t opcode, bool is_reg) {
@@ -65,11 +64,11 @@ void chip8_isa_sub(struct Chip8 *chip, uint16_t opcode, bool rsb) {
     
     uint16_t x = chip->v[regX];
     uint16_t y = chip->v[regY];
-    uint16_t minuend = rsb ? x : y;
-    uint16_t subtrahend = rsb ? y : x;
+    uint16_t lhs = rsb ? x : y;
+    uint16_t rhs = rsb ? y : x;
 
-    chip->v[0xf] = minuend > subtrahend ? 1 : 0;
-    chip->v[regX] = minuend - subtrahend;
+    chip->v[0xf] = lhs > rhs ? 1 : 0;
+    chip->v[regX] = lhs - rhs;
 }
 
 void chip8_isa_or(struct Chip8 *chip, uint16_t opcode) {
@@ -85,19 +84,25 @@ void chip8_isa_xor(struct Chip8 *chip, uint16_t opcode) {
 }
 
 void chip8_isa_skne_reg(struct Chip8 *chip, uint16_t opcode) {
-    uint8_t regX = chip8_X(opcode);
-    uint8_t regY = chip8_Y(opcode);
-    
-    if (chip->v[regX] != chip->v[regY]) chip->pc += 2;
+    if (chip->v[chip8_X(opcode)] != chip->v[chip8_Y(opcode)])
+        chip->pc += 2;
 }
 
 void chip8_isa_mvi(struct Chip8 *chip, uint16_t opcode) {
     chip->i = chip8_NNN(opcode);
 }
 
-void chip8_isa_sprite(struct Chip8 *chip, uint16_t opcode) {
-    perror("cannot draw sprites yet");
-    exit(1);
+void chip8_isa_draw(struct Chip8 *chip, uint16_t opcode) {
+    uint8_t x = chip->v[chip8_X(opcode)];
+    uint8_t y = chip->v[chip8_Y(opcode)];
+    uint8_t n = chip8_N(opcode);
+    uint8_t sprite[n];
+    
+    for (uint8_t segment = 0; segment < n; segment++){
+        sprite[segment] = chip8_mem_read(chip, chip->i + segment);
+    }
+    
+    chip->v[0xf] = chip8_display_draw(chip->display, x, y, n, sprite);
 }
 
 // internals

@@ -19,6 +19,6 @@ void chip8_isa_and(struct Chip8 *chip, uint16_t opcode);
 void chip8_isa_xor(struct Chip8 *chip, uint16_t opcode);
 void chip8_isa_skne_reg(struct Chip8 *chip, uint16_t opcode);
 void chip8_isa_mvi(struct Chip8 *chip, uint16_t opcode);
-void chip8_isa_sprite(struct Chip8 *chip, uint16_t opcode);
+void chip8_isa_draw(struct Chip8 *chip, uint16_t opcode);
 
 #endif
