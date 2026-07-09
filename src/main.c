@@ -1,6 +1,10 @@
+#include <SDL3/SDL.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "renderer.h"
 #include "chip8.h"
+#include "timer.h"
 
 static void on_cycle(struct Chip8 *chip) {
     static int first_call = 1;
@@ -44,11 +48,21 @@ static void on_cycle(struct Chip8 *chip) {
 }
 
 int main() {
+    SDL_Window *window;
+    if ((window = SDL_CreateWindow("test", 640, 320, 0)) == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL window initialization failed: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    SDL_Renderer *renderer;
+    if ((renderer = SDL_CreateRenderer(window, NULL)) == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL renderer initialization failed: %s\n", SDL_GetError());
+        return 1;
+    }
+
     struct Chip8 chip;
-    chip8_init(&chip, 5);
-    
-    chip.on_cycle = on_cycle;
-    
+    chip8_init(&chip);
+
     uint8_t program[] = {
         0x00, 0xe0, // [0x200] 00E0 (cls)
         0xa2, 0x2a, // [0x202] ANNN (mvi I, 22AH)
@@ -119,19 +133,34 @@ int main() {
         0x00, 0xe0,
         0x00, 0xe0,
     };
-    chip8_load_prog(&chip, program, sizeof(program) / sizeof(uint8_t));
-    chip8_loop(&chip);
+    chip8_load_rom(&chip, program, sizeof(program) / sizeof(uint8_t));
     
+    const uint64_t interval = 1000000000 / 2; // instructions per ns
+    uint64_t next_tick = get_ticks();
+    SDL_Event event;
+    bool running = true;
+
+    while (chip.pc != 0 && running) {
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_QUIT) {
+                running = false;
+                continue;
+            }
+        }
+
+        if (get_ticks() >= next_tick) {
+            chip8_cycle(&chip);
+            next_tick += interval;
+        }
+
+        render_chip8_display(renderer, chip.display);
+    }
+
+    SDL_DestroyWindow(window);
+    SDL_DestroyRenderer(renderer);
+    window = NULL;
+    renderer = NULL;
+    SDL_Quit();
+
     return 0;
 }
-
-/**
- * asm code:
- * mov v0, 0x1
- * skeq v0, 10
- * jsr 0x20a
- * mov v1, v0
- * jmp 0x202
- * add v0, 0x1
- * rts
- */
