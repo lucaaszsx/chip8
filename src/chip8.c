@@ -1,9 +1,9 @@
-#include "chip8.h"
-#include "chip8_isa.h"
+#include <stdlib.h>
+#include <stdio.h>
 #include "display.h"
 #include "memory.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "chip8.h"
+#include "isa.h"
 
 #define OPCODE_CLS 0x00e0
 #define OPCODE_RTS 0x00ee
