@@ -36,7 +36,9 @@ struct Chip8 {
 
 // chip8 management
 void chip8_init(struct Chip8 *chip);
+void chip8_reset(struct Chip8 *chip);
 void chip8_load_rom(struct Chip8 *chip, const uint8_t *rom, size_t rom_length);
 void chip8_cycle(struct Chip8 *chip);
+void chip8_destroy(struct Chip8 *chip);
 
 #endif

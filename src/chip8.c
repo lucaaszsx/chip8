@@ -1,3 +1,5 @@
+#include <stdint.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "display.h"
@@ -33,7 +35,6 @@ const uint8_t CHIP8_STD_FONT[] = {
 };
 
 // -- internals
-static void chip8_cleanup(struct Chip8 *chip);
 static uint8_t chip8_fetch_byte(struct Chip8 *chip);
 static uint16_t chip8_fetch_word(struct Chip8 *chip);
 
@@ -46,8 +47,15 @@ void chip8_init(struct Chip8 *chip) {
     chip->on_cycle = NULL;
     
     // cleanup and then writes the standard font in memory
-    chip8_cleanup(chip);
+    chip8_reset(chip);
     chip8_mem_write_many(chip, FONT_ADDRESS, CHIP8_STD_FONT, sizeof(CHIP8_STD_FONT));
+}
+
+void chip8_reset(struct Chip8 *chip) {
+    memset(chip->v, 0, sizeof(chip->v));
+    memset(chip->stack, 0, sizeof(chip->stack) / sizeof(uint16_t));
+    memset(chip->mem, 0, sizeof(chip->mem));
+    chip8_display_reset(chip->display);
 }
 
 void chip8_load_rom(struct Chip8 *chip, const uint8_t *rom, size_t rom_length) {
@@ -56,7 +64,8 @@ void chip8_load_rom(struct Chip8 *chip, const uint8_t *rom, size_t rom_length) {
 
 void chip8_cycle(struct Chip8 *chip) {
     uint16_t opcode = chip8_fetch_word(chip);
-
+    bool matches = true;
+    
     // gets the opcode category with the mask
     switch ((opcode & 0xf000) >> 12) {
         case 0x0: {
@@ -67,6 +76,8 @@ void chip8_cycle(struct Chip8 *chip) {
                 case OPCODE_RTS:
                     chip8_isa_rts(chip);
                     break;
+                default:
+                    matches = false;
             }
             break;
         }
@@ -128,6 +139,9 @@ void chip8_cycle(struct Chip8 *chip) {
                 case 0x7:
                     chip8_isa_sub(chip, opcode, true);
                     break;
+                    
+                default:
+                    matches = false;
             }
             
             break;
@@ -146,22 +160,21 @@ void chip8_cycle(struct Chip8 *chip) {
             break;
 
         default:
-            // printf("invalid opcode %x", opcode);
-            break;
+            matches = false;
     }
-
+    
+    if (!matches) {
+        fprintf(stderr, "unknown instruction: %04x\n", opcode);
+        exit(EXIT_FAILURE);
+    }
     if (chip->on_cycle) chip->on_cycle(chip);
 }
 
-// -- chip8 internals
-void chip8_cleanup(struct Chip8 *chip) {
-    for (size_t reg = 0; reg < sizeof(chip->v); reg++) chip->v[reg] = 0x00;
-    for (size_t i = 0; i < sizeof(chip->stack) / sizeof(uint16_t); i++) chip->stack[i] = 0;
-
-    chip8_mem_reset(chip);
-    chip8_display_reset(chip->display);
+void chip8_destroy(struct Chip8 *chip) {
+    free(chip->display);
 }
 
+// -- chip8 internals
 uint8_t chip8_fetch_byte(struct Chip8 *chip) {
     uint8_t byte = chip8_mem_read(chip, chip->pc);
     chip->pc = (chip->pc + 1) & 0xfff;

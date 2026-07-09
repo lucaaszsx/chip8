@@ -6,73 +6,17 @@
 #include "chip8.h"
 #include "timer.h"
 
-static void on_cycle(struct Chip8 *chip) {
-    static int first_call = 1;
-    static char buf[8192];
-    size_t len = 0;
-
-    if (first_call) {
-        len += snprintf(buf + len, sizeof(buf) - len, "\033[2J");
-        first_call = 0;
-    }
-    len += snprintf(buf + len, sizeof(buf) - len, "\033[H");
-    len += snprintf(buf + len, sizeof(buf) - len, "---------- Chip-8 ----------\n");
-    len += snprintf(buf + len, sizeof(buf) - len, "REGISTERS:\n");
-    len += snprintf(buf + len, sizeof(buf) - len, "  PC (program counter): 0x%x\n", chip->pc);
-    len += snprintf(buf + len, sizeof(buf) - len, "  Byte at 0x%x: 0x%x\n", chip->pc, chip->mem[chip->pc]);
-    len += snprintf(buf + len, sizeof(buf) - len, "  Byte at 0x%x+1: 0x%x\n", chip->pc, chip->mem[chip->pc + 1]);
-    len += snprintf(buf + len, sizeof(buf) - len, "  I (index): 0x%x\n", chip->i);
-    len += snprintf(buf + len, sizeof(buf) - len, "  General Purpose Registers (GPR):\n");
-
-    for (size_t i = 0; i < sizeof(chip->v); i++) {
-        if (i % 8 == 0) {
-            if (i > 0) len += snprintf(buf + len, sizeof(buf) - len, "\n");
-            len += snprintf(buf + len, sizeof(buf) - len, "    ");
-        }
-        len += snprintf(buf + len, sizeof(buf) - len, "V%02zu=0x%02x    ", i, chip->v[i]);
-    }
-    len += snprintf(buf + len, sizeof(buf) - len, "\n");
-
-    len += snprintf(buf + len, sizeof(buf) - len, "MEMORY (512..768):\n");
-    for (size_t i = 512; i < 768; i++) {
-        if (i % 32 == 0) {
-            if (i > 512) len += snprintf(buf + len, sizeof(buf) - len, "\n");
-            len += snprintf(buf + len, sizeof(buf) - len, "  ");
-        }
-        len += snprintf(buf + len, sizeof(buf) - len, i == chip->pc ? "\033[31;1;4m%02x\033[0m " : "%02x ", chip->mem[i]);
-    }
-    len += snprintf(buf + len, sizeof(buf) - len, "\n");
-
-    len += snprintf(buf + len, sizeof(buf) - len, "VRAM:\n");
-    for (size_t i = 0; i < 1024; i++) {
-        if (i % 54 == 0) {
-            if (i > 0) len += snprintf(buf + len, sizeof(buf) - len, "\n");
-            len += snprintf(buf + len, sizeof(buf) - len, "  ");
-        }
-        len += snprintf(buf + len, sizeof(buf) - len, i == chip->pc ? "\033[31;1;4m%02x\033[0m " : "%02x ", chip->display->vram[i]);
-    }
-    len += snprintf(buf + len, sizeof(buf) - len, "\n\033[J");
-
-    fwrite(buf, 1, len, stdout);
-    fflush(stdout);
-}
+static void on_cycle(struct Chip8 *chip);
 
 int main() {
-    SDL_Window *window;
-    if ((window = SDL_CreateWindow("test", 640, 320, 0)) == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL window initialization failed: %s\n", SDL_GetError());
-        return 1;
-    }
-
-    SDL_Renderer *renderer;
-    if ((renderer = SDL_CreateRenderer(window, NULL)) == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL renderer initialization failed: %s\n", SDL_GetError());
-        return 1;
-    }
-
+    struct Chip8Renderer rd;
     struct Chip8 chip;
+    
     chip8_init(&chip);
+    chip8_renderer_init(&rd, &chip);
 
+    chip.on_cycle = on_cycle;
+    
     uint8_t program[] = {
         0x00, 0xe0, // [0x200] 00E0 (cls)
         0xa2, 0x2a, // [0x202] ANNN (mvi I, 22AH)
@@ -143,9 +87,9 @@ int main() {
         0x00, 0xe0,
         0x00, 0xe0,
     };
-    chip8_load_rom(&chip, program, sizeof(program) / sizeof(uint8_t));
+    chip8_load_rom(&chip, program, sizeof(program));
     
-    const uint64_t interval = 1000000000 / 2; // instructions per ns
+    const uint64_t interval = 1000000000 / 700; // instructions per ns
     uint64_t next_tick = get_ticks();
     SDL_Event event;
     bool running = true;
@@ -163,14 +107,52 @@ int main() {
             next_tick += interval;
         }
 
-        render_chip8_display(renderer, chip.display);
+        chip8_renderer_render(&rd);
     }
 
-    SDL_DestroyWindow(window);
-    SDL_DestroyRenderer(renderer);
-    window = NULL;
-    renderer = NULL;
-    SDL_Quit();
+    chip8_renderer_destroy(&rd);
+    chip8_destroy(&chip);
 
     return 0;
+}
+
+static void on_cycle(struct Chip8 *chip) {
+    static int first_call = 1;
+    static char buf[8192];
+    size_t len = 0;
+
+    if (first_call) {
+        len += snprintf(buf + len, sizeof(buf) - len, "\033[2J");
+        first_call = 0;
+    }
+    len += snprintf(buf + len, sizeof(buf) - len, "\033[H");
+    len += snprintf(buf + len, sizeof(buf) - len, "---------- Chip-8 ----------\n");
+    len += snprintf(buf + len, sizeof(buf) - len, "REGISTERS:\n");
+    len += snprintf(buf + len, sizeof(buf) - len, "  PC (program counter): 0x%x\n", chip->pc);
+    len += snprintf(buf + len, sizeof(buf) - len, "  Byte at 0x%x: 0x%x\n", chip->pc, chip->mem[chip->pc]);
+    len += snprintf(buf + len, sizeof(buf) - len, "  Byte at 0x%x+1: 0x%x\n", chip->pc, chip->mem[chip->pc + 1]);
+    len += snprintf(buf + len, sizeof(buf) - len, "  I (index): 0x%x\n", chip->i);
+    len += snprintf(buf + len, sizeof(buf) - len, "  General Purpose Registers (GPR):\n");
+
+    for (size_t i = 0; i < sizeof(chip->v); i++) {
+        if (i % 8 == 0) {
+            if (i > 0) len += snprintf(buf + len, sizeof(buf) - len, "\n");
+            len += snprintf(buf + len, sizeof(buf) - len, "    ");
+        }
+        len += snprintf(buf + len, sizeof(buf) - len, "V%02zu=0x%02x    ", i, chip->v[i]);
+    }
+    len += snprintf(buf + len, sizeof(buf) - len, "\n");
+
+    len += snprintf(buf + len, sizeof(buf) - len, "MEMORY (512..768):\n");
+    for (size_t i = 512; i < 768; i++) {
+        if (i % 32 == 0) {
+            if (i > 512) len += snprintf(buf + len, sizeof(buf) - len, "\n");
+            len += snprintf(buf + len, sizeof(buf) - len, "  ");
+        }
+        len += snprintf(buf + len, sizeof(buf) - len, i == chip->pc ? "\033[31;1;4m%02x\033[0m " : "%02x ", chip->mem[i]);
+    }
+    len += snprintf(buf + len, sizeof(buf) - len, "\n\033[J");
+
+    fwrite(buf, 1, len, stdout);
+    fflush(stdout);
 }

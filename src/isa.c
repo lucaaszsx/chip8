@@ -11,7 +11,7 @@ static uint8_t chip8_NN(uint16_t opcode);
 static uint16_t chip8_NNN(uint16_t opcode);
 
 void chip8_isa_cls(struct Chip8 *chip) {
-    chip8_display_clear(chip->display);
+    chip8_display_reset(chip->display);
 }
 
 void chip8_isa_rts(struct Chip8 *chip) {
