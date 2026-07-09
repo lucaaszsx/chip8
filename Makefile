@@ -16,16 +16,20 @@ OBJ=$(subst .c,.o,$(subst $(SRC),$(BUILD),$(C_SRC)))
 CC=gcc
 CC_FLAGS=-c -Wall -Wextra -Iinclude
 
+# SDL flags
+SDL_CFLAGS=$(shell pkg-config --cflags sdl3)
+SDL_LIBS=$(shell pkg-config --libs sdl3)
+
 all: $(PROJ_NAME)
 
 $(PROJ_NAME): $(OBJ)
-	$(CC) $^ -o $@
+	$(CC) $^ $(SDL_LIBS) -o $@
 
 $(BUILD):
 	mkdir $(BUILD) -p
 
 $(BUILD)/%.o: $(SRC)/%.c | $(BUILD)
-	$(CC) $< $(CC_FLAGS) -o $@
+	$(CC) $< $(CC_FLAGS) $(SDL_CFLAGS) -o $@
 
 clean:
 	@ rm -rf $(BUILD)/*.o $(PROJ_NAME) ~*
