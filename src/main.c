@@ -41,6 +41,16 @@ static void on_cycle(struct Chip8 *chip) {
         }
         len += snprintf(buf + len, sizeof(buf) - len, i == chip->pc ? "\033[31;1;4m%02x\033[0m " : "%02x ", chip->mem[i]);
     }
+    len += snprintf(buf + len, sizeof(buf) - len, "\n");
+
+    len += snprintf(buf + len, sizeof(buf) - len, "VRAM:\n");
+    for (size_t i = 0; i < 1024; i++) {
+        if (i % 54 == 0) {
+            if (i > 0) len += snprintf(buf + len, sizeof(buf) - len, "\n");
+            len += snprintf(buf + len, sizeof(buf) - len, "  ");
+        }
+        len += snprintf(buf + len, sizeof(buf) - len, i == chip->pc ? "\033[31;1;4m%02x\033[0m " : "%02x ", chip->display->vram[i]);
+    }
     len += snprintf(buf + len, sizeof(buf) - len, "\n\033[J");
 
     fwrite(buf, 1, len, stdout);
