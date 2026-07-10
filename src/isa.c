@@ -67,7 +67,7 @@ void chip8_isa_sub(struct Chip8 *chip, uint16_t opcode, bool rsb) {
     uint16_t lhs = rsb ? x : y;
     uint16_t rhs = rsb ? y : x;
 
-    chip->v[0xf] = lhs > rhs ? 1 : 0;
+    chip->v[0xf] = lhs >= rhs ? 1 : 0;
     chip->v[regX] = lhs - rhs;
 }
 
