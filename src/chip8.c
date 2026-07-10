@@ -9,6 +9,7 @@
 
 #define OPCODE_CLS 0x00e0
 #define OPCODE_RTS 0x00ee
+#define OPCODE_NOP 0x0000
 
 // -- addresses
 const uint16_t ROM_ADDRESS = 0x0200;
@@ -64,6 +65,8 @@ void chip8_load_rom(struct Chip8 *chip, const uint8_t *rom, size_t rom_length) {
 
 void chip8_cycle(struct Chip8 *chip) {
     uint16_t opcode = chip8_fetch_word(chip);
+    if (opcode == OPCODE_NOP) return;
+    
     bool matches = true;
     
     // gets the opcode category with the mask
