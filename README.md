@@ -2,6 +2,21 @@
 
 In this repository is my implementation that I built in C of a [CHIP-8](https://en.wikipedia.org/wiki/CHIP-8) emulator, where I created a system that simulates the hardware on which this interpreted language ran, and which is capable of executing programs (the so-called ROMs) that are based on its Instruction Set Architecture (ISA).
 
+## Table of Contents
+
+- [What is CHIP-8?](#what-is-chip-8)
+  - [VM Description](#vm-description)
+- [Project Overview](#project-overview)
+  - [TODO](#todo)
+- [Using the Emulator](#using-the-emulator)
+  - [Requirements](#requirements)
+  - [Installation](#installation)
+  - [Cloning the repo](#cloning-the-repo)
+  - [Running](#running)
+  - [Building](#building)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## What is CHIP-8?
 
 CHIP-8 is an interpreted language that was developed by Joseph Weisbecker in 1970s, with the main goal of being simpler than machine code itself, while still being efficient in terms of resource consumption. Its simplicity combined with efficiency led the community to adopt its use, especially in the context of game development and recreation.
