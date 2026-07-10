@@ -53,7 +53,7 @@ void chip8_init(struct Chip8 *chip) {
 
 void chip8_reset(struct Chip8 *chip) {
     memset(chip->v, 0, sizeof(chip->v));
-    memset(chip->stack, 0, sizeof(chip->stack) / sizeof(uint16_t));
+    memset(chip->stack, 0, sizeof(chip->stack));
     memset(chip->mem, 0, sizeof(chip->mem));
     chip8_display_reset(chip->display);
 }
