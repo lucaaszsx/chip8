@@ -139,6 +139,14 @@ void chip8_cycle(struct Chip8 *chip) {
                 case 0x7:
                     chip8_isa_sub(chip, opcode, true);
                     break;
+
+                case 0x6:
+                    chip8_isa_shr(chip, opcode);
+                    break;
+
+                case 0xe:
+                    chip8_isa_shl(chip, opcode);
+                    break;
                     
                 default:
                     matches = false;
@@ -155,9 +163,41 @@ void chip8_cycle(struct Chip8 *chip) {
             chip8_isa_mvi(chip, opcode);
             break;
 
+        case 0xb:
+            chip8_isa_jmi(chip, opcode);
+            break;
+
+        case 0xc:
+            chip8_isa_rand(chip, opcode);
+            break;
+
         case 0xd:
             chip8_isa_draw(chip, opcode);
             break;
+
+        case 0xf: {
+            switch (opcode & 0x00ff) {
+                case 0x1e:
+                    chip8_isa_adi(chip, opcode);
+                    break;
+
+                case 0x33:
+                    chip8_isa_bcd(chip, opcode);
+                    break;
+
+                case 0x55:
+                    chip8_isa_str(chip, opcode);
+                    break;
+
+                case 0x65:
+                    chip8_isa_ldr(chip, opcode);
+                    break;
+
+                default:
+                    matches = false;
+            }
+            break;
+        }
 
         default:
             matches = false;

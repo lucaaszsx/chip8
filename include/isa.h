@@ -17,8 +17,16 @@ void chip8_isa_sub(struct Chip8 *chip, uint16_t opcode, bool rsb);
 void chip8_isa_or(struct Chip8 *chip, uint16_t opcode);
 void chip8_isa_and(struct Chip8 *chip, uint16_t opcode);
 void chip8_isa_xor(struct Chip8 *chip, uint16_t opcode);
+void chip8_isa_shr(struct Chip8 *chip, uint16_t opcode);
+void chip8_isa_shl(struct Chip8 *chip, uint16_t opcode);
 void chip8_isa_skne_reg(struct Chip8 *chip, uint16_t opcode);
 void chip8_isa_mvi(struct Chip8 *chip, uint16_t opcode);
+void chip8_isa_jmi(struct Chip8 *chip, uint16_t opcode);
+void chip8_isa_rand(struct Chip8 *chip, uint16_t opcode);
 void chip8_isa_draw(struct Chip8 *chip, uint16_t opcode);
+void chip8_isa_adi(struct Chip8 *chip, uint16_t opcode);
+void chip8_isa_bcd(struct Chip8 *chip, uint16_t opcode);
+void chip8_isa_str(struct Chip8 *chip, uint16_t opcode);
+void chip8_isa_ldr(struct Chip8 *chip, uint16_t opcode);
 
 #endif

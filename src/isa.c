@@ -1,6 +1,8 @@
 #include "memory.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
 #include "display.h"
 #include "isa.h"
 
@@ -83,6 +85,14 @@ void chip8_isa_xor(struct Chip8 *chip, uint16_t opcode) {
     chip->v[chip8_X(opcode)] ^= chip->v[chip8_Y(opcode)];
 }
 
+void chip8_isa_shr(struct Chip8 *chip, uint16_t opcode) {
+    chip->v[chip8_X(opcode)] >>= 1;
+}
+
+void chip8_isa_shl(struct Chip8 *chip, uint16_t opcode) {
+    chip->v[chip8_X(opcode)] <<= 1;
+}
+
 void chip8_isa_skne_reg(struct Chip8 *chip, uint16_t opcode) {
     if (chip->v[chip8_X(opcode)] != chip->v[chip8_Y(opcode)])
         chip->pc += 2;
@@ -90,6 +100,14 @@ void chip8_isa_skne_reg(struct Chip8 *chip, uint16_t opcode) {
 
 void chip8_isa_mvi(struct Chip8 *chip, uint16_t opcode) {
     chip->i = chip8_NNN(opcode);
+}
+
+void chip8_isa_jmi(struct Chip8 *chip, uint16_t opcode) {
+    chip->pc = chip8_NN(opcode) + chip->v[chip8_X(opcode)];
+}
+
+void chip8_isa_rand(struct Chip8 *chip, uint16_t opcode) {
+    chip->v[chip8_X(opcode)] = rand() & chip8_NN(opcode);
 }
 
 void chip8_isa_draw(struct Chip8 *chip, uint16_t opcode) {
@@ -103,6 +121,33 @@ void chip8_isa_draw(struct Chip8 *chip, uint16_t opcode) {
     }
     
     chip->v[0xf] = chip8_display_draw(chip->display, x, y, n, sprite);
+}
+
+void chip8_isa_adi(struct Chip8 *chip, uint16_t opcode) {
+    uint16_t result = chip->i + chip->v[chip8_X(opcode)];
+
+    chip->v[0xf] = (result > UINT8_MAX) ? 1 : 0;
+    chip->i = result;
+}
+
+void chip8_isa_bcd(struct Chip8 *chip, uint16_t opcode) {
+    uint8_t value = chip->v[chip8_X(opcode)];
+    uint8_t digits[3] = {
+        value / 100,
+        (value / 10) % 10,
+        value % 10
+    };
+    
+    chip8_mem_write_many(chip, chip->i, digits, 3);
+}
+
+void chip8_isa_str(struct Chip8 *chip, uint16_t opcode) {
+    chip8_mem_write_many(chip, chip->i, chip->v, chip8_X(opcode) + 1); // v0..vx
+}
+
+void chip8_isa_ldr(struct Chip8 *chip, uint16_t opcode) {
+    for (size_t i = 0; i <= chip8_X(opcode); i++)
+        chip->v[i] = chip8_mem_read(chip, chip->i + i);
 }
 
 // internals
