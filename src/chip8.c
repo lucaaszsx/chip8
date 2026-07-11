@@ -1,6 +1,8 @@
+#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 #include "display.h"
+#include "keypad.h"
 #include "memory.h"
 #include "chip8.h"
 #include "isa.h"
@@ -45,6 +47,7 @@ void chip8_init(struct Chip8 *chip) {
     chip->st = 0;
     chip->dt = 0;
     chip->display = malloc(sizeof(struct Chip8Display));
+    chip->keypad = malloc(sizeof(struct Chip8Keypad));
     chip->on_cycle = NULL;
     
     // cleanup and then writes the standard font in memory
@@ -56,6 +59,10 @@ void chip8_reset(struct Chip8 *chip) {
     memset(chip->v, 0, sizeof(chip->v));
     memset(chip->stack, 0, sizeof(chip->stack));
     memset(chip->mem, 0, sizeof(chip->mem));
+    
+    memset(chip->keypad->keys, false, sizeof(chip->keypad->keys));
+    chip->keypad->waiting_key = -1;
+    
     chip8_display_reset(chip->display);
 }
 

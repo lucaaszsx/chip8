@@ -2,6 +2,7 @@
 #define CHIP_H
 
 #include "display.h"
+#include "keypad.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -35,6 +36,9 @@ struct Chip8 {
     
     // display
     struct Chip8Display *display;
+
+    // keypad
+    struct Chip8Keypad *keypad;
 
     // callback to call every cpu cycle
     void (*on_cycle)(struct Chip8*);
