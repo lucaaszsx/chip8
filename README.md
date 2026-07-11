@@ -54,8 +54,8 @@ In this project, I implemented a full CHIP-8 emulator in pure C, capable of load
 - [x] SDL3 renderer
 - [x] Display
 - [ ] Keypad
-- [ ] Delay timer
-- [ ] Sound timer
+- [x] Delay timer
+- [x] Sound timer
 - [ ] Add sound output using SDL3 Audio API
 
 ## Using the Emulator

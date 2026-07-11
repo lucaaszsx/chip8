@@ -1,6 +1,4 @@
-#include <stdint.h>
 #include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include "display.h"
 #include "memory.h"
@@ -44,6 +42,8 @@ void chip8_init(struct Chip8 *chip) {
     chip->pc = ROM_ADDRESS;
     chip->i = 0x0000;
     chip->stack_index = 0;
+    chip->st = 0;
+    chip->dt = 0;
     chip->display = malloc(sizeof(struct Chip8Display));
     chip->on_cycle = NULL;
     
@@ -207,10 +207,15 @@ void chip8_cycle(struct Chip8 *chip) {
     }
     
     if (!matches) {
-        fprintf(stderr, "unknown instruction: %04x\n", opcode);
+        fprintf(stderr, "unknown instruction %04x at %04x\n", opcode, chip->pc - 2);
         exit(EXIT_FAILURE);
     }
     if (chip->on_cycle) chip->on_cycle(chip);
+}
+
+void chip8_update_timers(struct Chip8 *chip) {
+    if (chip->st > 0) chip->st--;
+    if (chip->dt > 0) chip->dt--;
 }
 
 void chip8_destroy(struct Chip8 *chip) {

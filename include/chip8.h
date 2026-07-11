@@ -26,6 +26,12 @@ struct Chip8 {
 
     // current stack index
     size_t stack_index;
+
+    // delay timer (0-255)
+    uint8_t dt;
+
+    // sound timer (0-255)
+    uint8_t st;
     
     // display
     struct Chip8Display *display;
@@ -34,11 +40,11 @@ struct Chip8 {
     void (*on_cycle)(struct Chip8*);
 };
 
-// chip8 management
 void chip8_init(struct Chip8 *chip);
 void chip8_reset(struct Chip8 *chip);
 void chip8_load_rom(struct Chip8 *chip, const uint8_t *rom, size_t rom_length);
 void chip8_cycle(struct Chip8 *chip);
+void chip8_update_timers(struct Chip8 *chip);
 void chip8_destroy(struct Chip8 *chip);
 
 #endif

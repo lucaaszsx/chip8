@@ -11,12 +11,12 @@ static void on_cycle(struct Chip8 *chip);
 int main() {
     struct Chip8Renderer rd;
     struct Chip8 chip;
-    
+
     chip8_init(&chip);
     chip8_renderer_init(&rd, &chip);
 
     chip.on_cycle = on_cycle;
-    
+
     uint8_t program[] = {
         0x00, 0xe0, // [0x200] 00E0 (cls)
         0xa2, 0x2a, // [0x202] ANNN (mvi I, 22AH)
@@ -88,9 +88,11 @@ int main() {
         0x00, 0xe0,
     };
     chip8_load_rom(&chip, program, sizeof(program));
-    
-    const uint64_t interval = 1000000000 / 700; // instructions per ns
-    uint64_t next_tick = get_ticks();
+
+    const uint64_t cycle_interval = 1000000000 / 700;
+    const uint64_t timers_interval = 1000000000 / 60; // 60Hz
+    uint64_t next_cycle_tick = get_ticks();
+    uint64_t next_timers_tick = get_ticks();
     SDL_Event event;
     bool running = true;
 
@@ -102,9 +104,14 @@ int main() {
             }
         }
 
-        if (get_ticks() >= next_tick) {
+        uint64_t now = get_ticks();
+        if (now >= next_cycle_tick) {
             chip8_cycle(&chip);
-            next_tick += interval;
+            next_cycle_tick += cycle_interval;
+        }
+        if (now >= next_timers_tick) {
+            chip8_update_timers(&chip);
+            next_timers_tick += timers_interval;
         }
 
         chip8_renderer_render(&rd);
@@ -132,6 +139,8 @@ static void on_cycle(struct Chip8 *chip) {
     len += snprintf(buf + len, sizeof(buf) - len, "  Byte at 0x%x: 0x%x\n", chip->pc, chip->mem[chip->pc]);
     len += snprintf(buf + len, sizeof(buf) - len, "  Byte at 0x%x+1: 0x%x\n", chip->pc, chip->mem[chip->pc + 1]);
     len += snprintf(buf + len, sizeof(buf) - len, "  I (index): 0x%x\n", chip->i);
+    len += snprintf(buf + len, sizeof(buf) - len, "  DT: 0x%x\n", chip->dt);
+    len += snprintf(buf + len, sizeof(buf) - len, "  ST: 0x%x\n", chip->st);
     len += snprintf(buf + len, sizeof(buf) - len, "  General Purpose Registers (GPR):\n");
 
     for (size_t i = 0; i < sizeof(chip->v); i++) {
