@@ -1,126 +1,140 @@
 #include <SDL3/SDL.h>
 #include <stdbool.h>
-#include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include "renderer.h"
+#include "keypad.h"
 #include "chip8.h"
-#include "timer.h"
 
+#define NS_PER_SEC      1000000000ULL
+#define IPS             700                // instructions p/s
+
+#define CYCLE_INTERVAL  (NS_PER_SEC / IPS) // IPS Hz
+#define TIMERS_INTERVAL (NS_PER_SEC / 60)  // 60Hz
+#define RENDER_INTERVAL (NS_PER_SEC / 60)  // 60Hz
+
+static uint8_t map_scancode(SDL_Scancode code);
 static void on_cycle(struct Chip8 *chip);
 
-int main() {
-    struct Chip8Renderer rd;
-    struct Chip8 chip;
+int main(int argc, char **argv) {
+    if (argc < 2) {
+        fprintf(stderr, "You need to specify the ROM file to open. Usage: %s PATH_TO_ROM", argv[0]);
+        return EXIT_FAILURE;
+    }
+    
+    FILE *rom_file = fopen(argv[1], "rb");
+    if (rom_file == NULL) {
+        perror("Error while opening the ROM file");
+        return EXIT_FAILURE;
+    }
 
+    fseek(rom_file, 0, SEEK_END);
+    long rom_size = ftell(rom_file);
+    rewind(rom_file);
+
+    uint8_t *rom = (uint8_t *)(malloc(rom_size + 1));
+    if (rom == NULL) {
+        perror("Memory allocation for ROM failed");
+        fclose(rom_file);
+        return EXIT_FAILURE;
+    }
+
+    size_t bytes_read = fread(rom, 1, rom_size, rom_file);
+    rom[bytes_read] = '\0';
+    
+    struct Chip8 chip;
     chip8_init(&chip);
+    chip8_load_rom(&chip, rom, rom_size);
+    chip.on_cycle = on_cycle;
+    
+    struct Chip8Renderer rd;
     chip8_renderer_init(&rd, &chip);
 
-    chip.on_cycle = on_cycle;
+    uint64_t next_cycle_tick = SDL_GetTicksNS();
+    uint64_t next_timers_tick = SDL_GetTicksNS();
+    uint64_t next_render_tick = SDL_GetTicksNS();
 
-    uint8_t program[] = {
-        0x00, 0xe0, // [0x200] 00E0 (cls)
-        0xa2, 0x2a, // [0x202] ANNN (mvi I, 22AH)
-        0x60, 0x0c, // [0x204] 6XKK (mov V0, 0CH)
-        0x61, 0x08, // [0x206] 6XKK (mov V1, 08H)
-        0xd0, 0x1f, // [0x208] DXYN (sprite V0, V1, 0FH)
-        0x70, 0x09, // [0x20A] 7XKK (add V0, 09H)
-        0xa2, 0x39, // [0x20C] ANNN (mvi I, 239H)
-        0xd0, 0x1f, // [0x20E] DXYN (sprite V0, V1, 0FH)
-        0xa2, 0x48, // [0x210] ANNN (mvi I, 248H)
-        0x70, 0x08, // [0x212] 7XKK (add V0, 08H)
-        0xd0, 0x1f, // [0x214] DXYN (sprite V0, V1, 0FH)
-        0x70, 0x04, // [0x216] 7XKK (add V0, 04H)
-        0xa2, 0x57, // [0x218] ANNN (mvi I, 257H)
-        0xd0, 0x1f, // [0x21A] DXYN (sprite V0, V1, 0FH)
-        0x70, 0x08, // [0x21C] 7XKK (add V0, 08H)
-        0xa2, 0x66, // [0x21E] ANNN (mvi I, 266H)
-        0xd0, 0x1f, // [0x220] DXYN (sprite V0, V1, 0FH)
-        0x70, 0x08, // [0x222] 7XKK (add V0, 08H)
-        0xa2, 0x75, // [0x224] ANNN (mvi I, 275H)
-        0xd0, 0x1f, // [0x226] DXYN (sprite V0, V1, 0FH)
-        0x12, 0x28, // [0x228] 1NNN (jmp 228H)
-
-        // [0x22A] Sprite data
-        0xff, 0x00,
-        0xff, 0x00,
-        0x3c, 0x00,
-        0x3c, 0x00,
-        0x3c, 0x00,
-        0x3c, 0x00,
-        0xff, 0x00,
-        0xff, 0xff,
-        0x00, 0xff,
-        0x00, 0x38,
-        0x00, 0x3f,
-        0x00, 0x3f,
-        0x00, 0x38,
-        0x00, 0xff,
-        0x00, 0xff,
-        0x80, 0x00,
-        0xe0, 0x00,
-        0xe0, 0x00,
-        0x80, 0x00,
-        0x80, 0x00,
-        0xe0, 0x00,
-        0xe0, 0x00,
-        0x80, 0xf8,
-        0x00, 0xfc,
-        0x00, 0x3e,
-        0x00, 0x3f,
-        0x00, 0x3b,
-        0x00, 0x39,
-        0x00, 0xf8,
-        0x00, 0xf8,
-        0x03, 0x00,
-        0x07, 0x00,
-        0x0f, 0x00,
-        0xbf, 0x00,
-        0xfb, 0x00,
-        0xf3, 0x00,
-        0xe3, 0x00,
-        0x43, 0xe0,
-        0x00, 0xe0,
-        0x00, 0x80,
-        0x00, 0x80,
-        0x00, 0x80,
-        0x00, 0x80,
-        0x00, 0xe0,
-        0x00, 0xe0,
-    };
-    chip8_load_rom(&chip, program, sizeof(program));
-
-    const uint64_t cycle_interval = 1000000000 / 700;
-    const uint64_t timers_interval = 1000000000 / 60; // 60Hz
-    uint64_t next_cycle_tick = get_ticks();
-    uint64_t next_timers_tick = get_ticks();
     SDL_Event event;
     bool running = true;
-
-    while (chip.pc != 0 && running) {
+    
+    while (true) {
+        exit:
+            if (!running) break;
+        
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_QUIT) {
-                running = false;
-                continue;
+            switch (event.type) {
+                case SDL_EVENT_KEY_DOWN:
+                    chip8_keypad_press(chip.keypad, map_scancode(event.key.scancode));
+                    break;
+
+                case SDL_EVENT_KEY_UP:
+                    chip8_keypad_release(chip.keypad, map_scancode(event.key.scancode));
+                    break;
+
+                case SDL_EVENT_QUIT:
+                    running = false;
+                    goto exit;
+                    break;
             }
         }
 
-        uint64_t now = get_ticks();
+        uint64_t now = SDL_GetTicksNS();
+        
         if (now >= next_cycle_tick) {
             chip8_cycle(&chip);
-            next_cycle_tick += cycle_interval;
+            next_cycle_tick += CYCLE_INTERVAL;
         }
         if (now >= next_timers_tick) {
             chip8_update_timers(&chip);
-            next_timers_tick += timers_interval;
+            next_timers_tick += TIMERS_INTERVAL;
+        }
+        if (now >= next_render_tick) {
+            chip8_renderer_render(&rd);
+            next_render_tick += RENDER_INTERVAL;
         }
 
-        chip8_renderer_render(&rd);
+        uint64_t next = next_cycle_tick;
+        if (next_timers_tick < next) next = next_timers_tick;
+        if (next_render_tick < next) next = next_render_tick;
+
+        now = SDL_GetTicksNS();
+        if (next > now) SDL_DelayNS(next - now); 
     }
 
     chip8_renderer_destroy(&rd);
     chip8_destroy(&chip);
 
-    return 0;
+    return EXIT_SUCCESS;
+}
+
+uint8_t map_scancode(SDL_Scancode code) {
+    switch (code) {
+        // row 1
+        case SDL_SCANCODE_1: return 0x1;
+        case SDL_SCANCODE_2: return 0x2;
+        case SDL_SCANCODE_3: return 0x3;
+        case SDL_SCANCODE_4: return 0xc;
+
+        // row 2
+        case SDL_SCANCODE_Q: return 0x4;
+        case SDL_SCANCODE_W: return 0x5;
+        case SDL_SCANCODE_E: return 0x6;
+        case SDL_SCANCODE_R: return 0xd;
+
+        // row 3
+        case SDL_SCANCODE_A: return 0x7;
+        case SDL_SCANCODE_S: return 0x8;
+        case SDL_SCANCODE_D: return 0x9;
+        case SDL_SCANCODE_F: return 0xe;
+
+        // row 4
+        case SDL_SCANCODE_Z: return 0xa;
+        case SDL_SCANCODE_X: return 0x0;
+        case SDL_SCANCODE_C: return 0xb;
+        case SDL_SCANCODE_V: return 0xf;
+
+        default: return -1;
+    }
 }
 
 static void on_cycle(struct Chip8 *chip) {
@@ -141,14 +155,24 @@ static void on_cycle(struct Chip8 *chip) {
     len += snprintf(buf + len, sizeof(buf) - len, "  I (index): 0x%x\n", chip->i);
     len += snprintf(buf + len, sizeof(buf) - len, "  DT: 0x%x\n", chip->dt);
     len += snprintf(buf + len, sizeof(buf) - len, "  ST: 0x%x\n", chip->st);
-    len += snprintf(buf + len, sizeof(buf) - len, "  General Purpose Registers (GPR):\n");
+    len += snprintf(buf + len, sizeof(buf) - len, "  Keypad:\n");
 
+    for (size_t i = 0; i < sizeof(chip->keypad->keys); i++) {
+        if (i % 3 == 0) {
+            if (i > 0) len += snprintf(buf + len, sizeof(buf) - len, "\n");
+            len += snprintf(buf + len, sizeof(buf) - len, "    ");
+        }
+        len += snprintf(buf + len, sizeof(buf) - len, "%x=%x    ", i, chip8_keypad_pressed(chip->keypad, i));
+    }
+    len += snprintf(buf + len, sizeof(buf) - len, "\n");
+
+    len += snprintf(buf + len, sizeof(buf) - len, "  General Purpose Registers (GPR):\n");
     for (size_t i = 0; i < sizeof(chip->v); i++) {
         if (i % 8 == 0) {
             if (i > 0) len += snprintf(buf + len, sizeof(buf) - len, "\n");
             len += snprintf(buf + len, sizeof(buf) - len, "    ");
         }
-        len += snprintf(buf + len, sizeof(buf) - len, "V%02zu=0x%02x    ", i, chip->v[i]);
+        len += snprintf(buf + len, sizeof(buf) - len, "V%02x=0x%02x    ", (uint8_t)i, chip->v[i]);
     }
     len += snprintf(buf + len, sizeof(buf) - len, "\n");
 
