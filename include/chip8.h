@@ -8,6 +8,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+extern const uint16_t ROM_ADDRESS;
+extern const uint16_t FONT_ADDRESS;
+
 // -- chip8 definition
 struct Chip8 {
     // 4KiB of memory (same as original)
