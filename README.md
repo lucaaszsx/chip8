@@ -50,7 +50,7 @@ In this project, I implemented a full CHIP-8 emulator in pure C, capable of load
 ### TODO
 
 - [x] Instruction fetch/decode/execute cycle
-- [ ] 23/30 CHIP-8 opcodes
+- [x] 30/30 CHIP-8 opcodes 🥳
 - [x] SDL3 renderer
 - [x] Display
 - [x] Keypad

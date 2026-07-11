@@ -185,10 +185,43 @@ void chip8_cycle(struct Chip8 *chip) {
             chip8_isa_draw(chip, opcode);
             break;
 
+        case 0xe: {
+            switch (opcode & 0x00ff) {
+                case 0x9e:
+                    chip8_isa_skpr(chip, opcode);
+                    break;
+
+                case 0xa1:
+                    chip8_isa_skup(chip, opcode);
+                    break;
+            }
+            break;
+        }
+
         case 0xf: {
             switch (opcode & 0x00ff) {
+                case 0x07:
+                    chip8_isa_gdelay(chip, opcode);
+                    break;
+
+                case 0x15:
+                    chip8_isa_sdelay(chip, opcode);
+                    break;
+
+                case 0x18:
+                    chip8_isa_ssound(chip, opcode);
+                    break;
+
                 case 0x1e:
                     chip8_isa_adi(chip, opcode);
+                    break;
+
+                case 0x0a:
+                    chip8_isa_key(chip, opcode);
+                    break;
+
+                case 0x29:
+                    chip8_isa_font(chip, opcode);
                     break;
 
                 case 0x33:

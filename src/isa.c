@@ -1,3 +1,5 @@
+#include "chip8.h"
+#include "keypad.h"
 #include "memory.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -123,11 +125,43 @@ void chip8_isa_draw(struct Chip8 *chip, uint16_t opcode) {
     chip->v[0xf] = chip8_display_draw(chip->display, x, y, n, sprite);
 }
 
+void chip8_isa_skpr(struct Chip8 *chip, uint16_t opcode) {
+    if (chip8_keypad_pressed(chip->keypad, chip->v[chip8_X(opcode)]))
+        chip->pc += 2;
+}
+
+void chip8_isa_skup(struct Chip8 *chip, uint16_t opcode) {
+    if (!chip8_keypad_pressed(chip->keypad, chip->v[chip8_X(opcode)]))
+        chip->pc += 2;
+}
+
+void chip8_isa_gdelay(struct Chip8 *chip, uint16_t opcode) {
+    chip->v[chip8_X(opcode)] = chip->dt;
+}
+
+void chip8_isa_sdelay(struct Chip8 *chip, uint16_t opcode) {
+    chip->dt = chip->v[chip8_X(opcode)];
+}
+
+void chip8_isa_ssound(struct Chip8 *chip, uint16_t opcode) {
+    chip->st = chip->v[chip8_X(opcode)];
+}
+
 void chip8_isa_adi(struct Chip8 *chip, uint16_t opcode) {
     uint16_t result = chip->i + chip->v[chip8_X(opcode)];
 
     chip->v[0xf] = (result > UINT8_MAX) ? 1 : 0;
     chip->i = result;
+}
+
+void chip8_isa_key(struct Chip8 *chip, uint16_t opcode) {
+    if (!chip8_keypad_pressed(chip->keypad, chip->v[chip8_X(opcode)]))
+        chip->pc -= 2;
+}
+
+void chip8_isa_font(struct Chip8 *chip, uint16_t opcode) {
+    uint8_t vx = chip->v[chip8_X(opcode)];
+    chip->i = FONT_ADDRESS + (vx & 0x00ff) * 5;
 }
 
 void chip8_isa_bcd(struct Chip8 *chip, uint16_t opcode) {
