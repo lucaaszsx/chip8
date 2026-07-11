@@ -155,8 +155,13 @@ void chip8_isa_adi(struct Chip8 *chip, uint16_t opcode) {
 }
 
 void chip8_isa_key(struct Chip8 *chip, uint16_t opcode) {
-    if (!chip8_keypad_pressed(chip->keypad, chip->v[chip8_X(opcode)]))
-        chip->pc -= 2;
+    for (uint8_t key = 0; key < 0xf; key++) {
+        if (chip8_keypad_pressed(chip->keypad, key)) {
+            chip->v[chip8_X(opcode)] = key;
+            return;
+        }
+    }
+    chip->pc -= 2;
 }
 
 void chip8_isa_font(struct Chip8 *chip, uint16_t opcode) {
