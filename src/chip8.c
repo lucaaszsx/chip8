@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 #include "display.h"
 #include "keypad.h"
 #include "memory.h"
@@ -41,6 +43,9 @@ static uint16_t chip8_fetch_word(struct Chip8 *chip);
 
 // -- public chip8 interface
 void chip8_init(struct Chip8 *chip) {
+    // setup seed for generating random numbers
+    srand(time(NULL));
+
     chip->pc = ROM_ADDRESS;
     chip->i = 0x0000;
     chip->stack_index = 0;
