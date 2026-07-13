@@ -57,9 +57,15 @@ void chip8_isa_mov(struct Chip8 *chip, uint16_t opcode, bool is_reg) {
 
 void chip8_isa_add(struct Chip8 *chip, uint16_t opcode, bool is_reg) {
     uint8_t reg_x = chip8_X(opcode);
-    
-    if (is_reg) chip->v[reg_x] += chip->v[chip8_Y(opcode)];
-    else chip->v[reg_x] += chip8_NN(opcode);
+    uint8_t x = chip->v[reg_x];
+
+    if (is_reg) {
+        uint8_t y = chip->v[chip8_Y(opcode)];
+        int16_t result = (int16_t)x + (int16_t)y;
+
+        chip->v[reg_x] = result;
+        chip->v[0xf] = result > UINT8_MAX ? 1 : 0;
+    } else chip->v[reg_x] += chip8_NN(opcode);
 }
 
 void chip8_isa_sub(struct Chip8 *chip, uint16_t opcode, bool rsb) {
@@ -70,11 +76,11 @@ void chip8_isa_sub(struct Chip8 *chip, uint16_t opcode, bool rsb) {
     uint8_t y = chip->v[reg_y];
 
     if (rsb) {
-        chip->v[0xf] = y > x ? 0 : 1;
         chip->v[reg_x] = y - x;
+        chip->v[0xf] = y >= x ? 1 : 0;
     } else {
-        chip->v[0xf] = ((int16_t)x - (int16_t)y) < 0 ? 0: 1;
         chip->v[reg_x] = x - y;
+        chip->v[0xf] = x >= y ? 1 : 0;
     }
 }
 
@@ -91,11 +97,19 @@ void chip8_isa_xor(struct Chip8 *chip, uint16_t opcode) {
 }
 
 void chip8_isa_shr(struct Chip8 *chip, uint16_t opcode) {
-    chip->v[chip8_X(opcode)] >>= 1;
+    uint8_t reg_x = chip8_X(opcode);
+    uint8_t x = chip->v[reg_x];
+
+    chip->v[reg_x] >>= 1;
+    chip->v[0xf] = x & 0x1;
 }
 
 void chip8_isa_shl(struct Chip8 *chip, uint16_t opcode) {
-    chip->v[chip8_X(opcode)] <<= 1;
+    uint8_t reg_x = chip8_X(opcode);
+    uint8_t x = chip->v[reg_x];
+
+    chip->v[reg_x] <<= 1;
+    chip->v[0xf] = (x >> 7) & 0x1;
 }
 
 void chip8_isa_skne_reg(struct Chip8 *chip, uint16_t opcode) {
