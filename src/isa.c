@@ -66,13 +66,16 @@ void chip8_isa_sub(struct Chip8 *chip, uint16_t opcode, bool rsb) {
     uint8_t reg_x = chip8_X(opcode);
     uint8_t reg_y = chip8_Y(opcode);
     
-    uint16_t x = chip->v[reg_x];
-    uint16_t y = chip->v[reg_y];
-    uint16_t lhs = rsb ? x : y;
-    uint16_t rhs = rsb ? y : x;
+    uint8_t x = chip->v[reg_x];
+    uint8_t y = chip->v[reg_y];
 
-    chip->v[0xf] = lhs >= rhs ? 1 : 0;
-    chip->v[reg_x] = lhs - rhs;
+    if (rsb) {
+        chip->v[0xf] = y > x ? 1 : 0;
+        chip->v[reg_x] = y - x;
+    } else {
+        chip->v[0xf] = ((int16_t)x - (int16_t)y) < 0 ? 1 : 0;
+        chip->v[reg_x] = x - y;
+    }
 }
 
 void chip8_isa_or(struct Chip8 *chip, uint16_t opcode) {
