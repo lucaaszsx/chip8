@@ -13,7 +13,7 @@
 #define TIMERS_INTERVAL (NS_PER_SEC / 60)  // 60Hz
 #define RENDER_INTERVAL (NS_PER_SEC / 60)  // 60Hz
 
-static uint8_t map_scancode(SDL_Scancode code);
+static int8_t map_scancode(SDL_Scancode code);
 static void on_cycle(struct Chip8 *chip);
 
 int main(int argc, char **argv) {
@@ -63,13 +63,17 @@ int main(int argc, char **argv) {
         
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
-                case SDL_EVENT_KEY_DOWN:
-                    chip8_keypad_press(chip.keypad, map_scancode(event.key.scancode));
+                case SDL_EVENT_KEY_DOWN: {
+                    int8_t sc = map_scancode(event.key.scancode);
+                    if (sc > -1) chip8_keypad_press(chip.keypad, sc);
                     break;
+                }
 
-                case SDL_EVENT_KEY_UP:
-                    chip8_keypad_release(chip.keypad, map_scancode(event.key.scancode));
+                case SDL_EVENT_KEY_UP: {
+                    int8_t sc = map_scancode(event.key.scancode);
+                    if (sc > -1) chip8_keypad_release(chip.keypad, sc);
                     break;
+                }
 
                 case SDL_EVENT_QUIT:
                     running = false;
@@ -107,7 +111,7 @@ int main(int argc, char **argv) {
     return EXIT_SUCCESS;
 }
 
-uint8_t map_scancode(SDL_Scancode code) {
+int8_t map_scancode(SDL_Scancode code) {
     switch (code) {
         // row 1
         case SDL_SCANCODE_1: return 0x1;

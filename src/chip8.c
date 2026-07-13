@@ -66,7 +66,8 @@ void chip8_reset(struct Chip8 *chip) {
     memset(chip->mem, 0, sizeof(chip->mem));
     
     memset(chip->keypad->keys, false, sizeof(chip->keypad->keys));
-    chip->keypad->waiting_key = -1;
+    memset(chip->keypad->key_was_down, false, sizeof(chip->keypad->keys));
+    chip->keypad->waiting = false;
     
     chip8_display_reset(chip->display);
 }
