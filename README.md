@@ -57,7 +57,7 @@ In this project, I implemented a full CHIP-8 emulator in pure C, capable of load
 - [x] Delay timer
 - [x] Sound timer
 - [x] Add sound output using SDL3 Audio API
-- [ ] Add configurable options (IPS, ROM start address, window size, fg/bg color, audio flags)
+- [ ] Add configurable options
     - [ ] IPS
     - [ ] ROM start address
     - [ ] Window options (size, scale, fg/bg color)
