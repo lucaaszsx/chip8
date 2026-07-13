@@ -70,10 +70,10 @@ void chip8_isa_sub(struct Chip8 *chip, uint16_t opcode, bool rsb) {
     uint8_t y = chip->v[reg_y];
 
     if (rsb) {
-        chip->v[0xf] = y > x ? 1 : 0;
+        chip->v[0xf] = y > x ? 0 : 1;
         chip->v[reg_x] = y - x;
     } else {
-        chip->v[0xf] = ((int16_t)x - (int16_t)y) < 0 ? 1 : 0;
+        chip->v[0xf] = ((int16_t)x - (int16_t)y) < 0 ? 0: 1;
         chip->v[reg_x] = x - y;
     }
 }
