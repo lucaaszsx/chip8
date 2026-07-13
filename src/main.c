@@ -8,7 +8,7 @@
 #include "chip8.h"
 
 #define NS_PER_SEC      1000000000ULL
-#define IPS             100                // instructions p/s
+#define IPS             700                // instructions p/s
 
 #define CYCLE_INTERVAL  (NS_PER_SEC / IPS) // IPS Hz
 #define TIMERS_INTERVAL (NS_PER_SEC / 60)  // 60Hz
@@ -192,7 +192,7 @@ int8_t map_scancode(SDL_Scancode code) {
         // row 4
         case SDL_SCANCODE_Z: return KEYPAD_KEY_A;
         case SDL_SCANCODE_X: return KEYPAD_KEY_0;
-        case SDL_SCANCODE_C: return KEYPAD_KEY_C;
+        case SDL_SCANCODE_C: return KEYPAD_KEY_B;
         case SDL_SCANCODE_V: return KEYPAD_KEY_F;
 
         default: return -1;
