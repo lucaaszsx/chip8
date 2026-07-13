@@ -1,11 +1,9 @@
-#include "chip8.h"
-#include "keypad.h"
-#include "memory.h"
-#include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
+#include <stdio.h>
 #include "display.h"
+#include "memory.h"
+#include "keypad.h"
+#include "chip8.h"
 #include "isa.h"
 
 static uint8_t chip8_X(uint16_t opcode);

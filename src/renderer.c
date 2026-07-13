@@ -1,7 +1,5 @@
-#include <math.h>
 #include <stdlib.h>
 #include "renderer.h"
-#include "display.h"
 
 void chip8_renderer_init(struct Chip8Renderer *rd, struct Chip8 *chip) {
     SDL_Window *window;
@@ -22,10 +20,10 @@ void chip8_renderer_init(struct Chip8Renderer *rd, struct Chip8 *chip) {
 }
 
 void chip8_renderer_render(struct Chip8Renderer *rd) {
-    SDL_SetRenderDrawColor(rd->renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(rd->renderer, 139, 172, 15, 255);
     SDL_RenderClear(rd->renderer);
 
-    SDL_SetRenderDrawColor(rd->renderer, 255, 255, 255, 255);
+    SDL_SetRenderDrawColor(rd->renderer, 48, 98, 48, 255);
     
     for (size_t i = 0; i < DISPLAY_SIZE; i++) {
         if (rd->chip->display->vram[i] != 1) continue;

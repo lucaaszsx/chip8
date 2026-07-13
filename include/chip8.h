@@ -1,12 +1,10 @@
 #ifndef CHIP_H
 #define CHIP_H
 
-#include "display.h"
-#include "keypad.h"
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdlib.h>
+#include "display.h"
+#include "keypad.h"
 
 extern const uint16_t ROM_ADDRESS;
 extern const uint16_t FONT_ADDRESS;

@@ -1,5 +1,3 @@
-#include <stdbool.h>
-#include <stdio.h>
 #include <string.h>
 #include "display.h"
 
@@ -19,9 +17,8 @@ uint8_t chip8_display_draw(struct Chip8Display *display, uint8_t x, uint8_t y, u
             uint16_t index = (py * DISPLAY_COLS) + px;
 
             uint8_t sprite_bit = (row & (1 << (7 - j))) != 0;
-            uint8_t vram_bit = display->vram[index];
+            if (display->vram[index] && sprite_bit) has_collision = true;
 
-            if (vram_bit && sprite_bit) has_collision = true;
             display->vram[index] ^= sprite_bit;
         }
     }

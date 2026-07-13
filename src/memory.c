@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include "memory.h"
 
 void chip8_mem_write(struct Chip8 *chip, uint16_t addr, uint8_t word) {

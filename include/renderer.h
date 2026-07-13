@@ -2,7 +2,6 @@
 #define RENDERER_H
 
 #include <SDL3/SDL.h>
-#include "display.h"
 #include "chip8.h"
 
 #define APP_TITLE "Chip8 Emulator"

@@ -1,5 +1,4 @@
 #include "keypad.h"
-#include <stdio.h>
 
 void chip8_keypad_press(struct Chip8Keypad *keypad, uint8_t key) {
     if (key > 0xf) return;
