@@ -2,19 +2,27 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "renderer.h"
 #include "keypad.h"
 #include "chip8.h"
 
 #define NS_PER_SEC      1000000000ULL
-#define IPS             700                // instructions p/s
+#define IPS             100                // instructions p/s
 
 #define CYCLE_INTERVAL  (NS_PER_SEC / IPS) // IPS Hz
 #define TIMERS_INTERVAL (NS_PER_SEC / 60)  // 60Hz
 #define RENDER_INTERVAL (NS_PER_SEC / 60)  // 60Hz
 
+#define AUDIO_FREQ      44100
+#define TONE_HZ         440.0
+#define TONE_AMPLITUDE  6000
+
 static int8_t map_scancode(SDL_Scancode code);
 static void on_cycle(struct Chip8 *chip);
+static void SDLCALL audio_callback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
+
+static double g_phase = 0.0;
 
 int main(int argc, char **argv) {
     if (argc < 2) {
@@ -49,6 +57,26 @@ int main(int argc, char **argv) {
     
     struct Chip8Renderer rd;
     chip8_renderer_init(&rd, &chip);
+
+    if (!SDL_Init(SDL_INIT_AUDIO)) {
+        fprintf(stderr, "SDL_Init(AUDIO) failed: %s\n", SDL_GetError());
+        return EXIT_FAILURE;
+    }
+
+    SDL_AudioSpec audio_spec = {
+        .format = SDL_AUDIO_S16,
+        .channels = 1,
+        .freq = AUDIO_FREQ,
+    };
+
+    SDL_AudioStream *audio_stream = SDL_OpenAudioDeviceStream(
+        SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &audio_spec, audio_callback, NULL);
+    if (audio_stream == NULL) {
+        fprintf(stderr, "SDL_OpenAudioDeviceStream failed: %s\n", SDL_GetError());
+        return EXIT_FAILURE;
+    }
+
+    bool beeping = false;
 
     uint64_t next_cycle_tick = SDL_GetTicksNS();
     uint64_t next_timers_tick = SDL_GetTicksNS();
@@ -91,6 +119,15 @@ int main(int argc, char **argv) {
         if (now >= next_timers_tick) {
             chip8_update_timers(&chip);
             next_timers_tick += TIMERS_INTERVAL;
+
+            if (chip.st > 0 && !beeping) {
+                SDL_ResumeAudioStreamDevice(audio_stream);
+                beeping = true;
+            } else if (chip.st == 0 && beeping) {
+                SDL_PauseAudioStreamDevice(audio_stream);
+                SDL_ClearAudioStream(audio_stream);
+                beeping = false;
+            }
         }
         if (now >= next_render_tick) {
             chip8_renderer_render(&rd);
@@ -105,10 +142,31 @@ int main(int argc, char **argv) {
         if (next > now) SDL_DelayNS(next - now); 
     }
 
+    SDL_DestroyAudioStream(audio_stream);
     chip8_renderer_destroy(&rd);
     chip8_destroy(&chip);
 
     return EXIT_SUCCESS;
+}
+
+static void SDLCALL audio_callback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount) {
+    (void)userdata;
+    (void)total_amount;
+    if (additional_amount <= 0) return;
+
+    int samples_needed = additional_amount / sizeof(int16_t);
+    int16_t *samples = (int16_t *)malloc(samples_needed * sizeof(int16_t));
+    if (samples == NULL) return;
+
+    double phase_inc = (4.0 * M_PI * TONE_HZ) / AUDIO_FREQ;
+    for (int i = 0; i < samples_needed; i++) {
+        samples[i] = (int16_t)(SDL_sin(g_phase) * TONE_AMPLITUDE);
+        g_phase += phase_inc;
+        if (g_phase >= 4.0 * M_PI) g_phase -= 4.0 * M_PI;
+    }
+
+    SDL_PutAudioStreamData(stream, samples, samples_needed * sizeof(int16_t));
+    free(samples);
 }
 
 int8_t map_scancode(SDL_Scancode code) {

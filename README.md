@@ -56,7 +56,7 @@ In this project, I implemented a full CHIP-8 emulator in pure C, capable of load
 - [x] Keypad
 - [x] Delay timer
 - [x] Sound timer
-- [ ] Add sound output using SDL3 Audio API
+- [x] Add sound output using SDL3 Audio API
 
 ## Using the Emulator
 
