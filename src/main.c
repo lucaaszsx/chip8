@@ -172,28 +172,28 @@ static void SDLCALL audio_callback(void *userdata, SDL_AudioStream *stream, int 
 int8_t map_scancode(SDL_Scancode code) {
     switch (code) {
         // row 1
-        case SDL_SCANCODE_1: return 0x1;
-        case SDL_SCANCODE_2: return 0x2;
-        case SDL_SCANCODE_3: return 0x3;
-        case SDL_SCANCODE_4: return 0xc;
+        case SDL_SCANCODE_1: return KEYPAD_KEY_1;
+        case SDL_SCANCODE_2: return KEYPAD_KEY_2;
+        case SDL_SCANCODE_3: return KEYPAD_KEY_3;
+        case SDL_SCANCODE_4: return KEYPAD_KEY_C;
 
         // row 2
-        case SDL_SCANCODE_Q: return 0x4;
-        case SDL_SCANCODE_W: return 0x5;
-        case SDL_SCANCODE_E: return 0x6;
-        case SDL_SCANCODE_R: return 0xd;
+        case SDL_SCANCODE_Q: return KEYPAD_KEY_4;
+        case SDL_SCANCODE_W: return KEYPAD_KEY_5;
+        case SDL_SCANCODE_E: return KEYPAD_KEY_6;
+        case SDL_SCANCODE_R: return KEYPAD_KEY_D;
 
         // row 3
-        case SDL_SCANCODE_A: return 0x7;
-        case SDL_SCANCODE_S: return 0x8;
-        case SDL_SCANCODE_D: return 0x9;
-        case SDL_SCANCODE_F: return 0xe;
+        case SDL_SCANCODE_A: return KEYPAD_KEY_7;
+        case SDL_SCANCODE_S: return KEYPAD_KEY_8;
+        case SDL_SCANCODE_D: return KEYPAD_KEY_9;
+        case SDL_SCANCODE_F: return KEYPAD_KEY_E;
 
         // row 4
-        case SDL_SCANCODE_Z: return 0xa;
-        case SDL_SCANCODE_X: return 0x0;
-        case SDL_SCANCODE_C: return 0xb;
-        case SDL_SCANCODE_V: return 0xf;
+        case SDL_SCANCODE_Z: return KEYPAD_KEY_A;
+        case SDL_SCANCODE_X: return KEYPAD_KEY_0;
+        case SDL_SCANCODE_C: return KEYPAD_KEY_C;
+        case SDL_SCANCODE_V: return KEYPAD_KEY_F;
 
         default: return -1;
     }
