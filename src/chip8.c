@@ -42,11 +42,12 @@ static uint8_t chip8_fetch_byte(struct Chip8 *chip);
 static uint16_t chip8_fetch_word(struct Chip8 *chip);
 
 // -- public chip8 interface
-void chip8_init(struct Chip8 *chip) {
+void chip8_init(struct Chip8 *chip, uint16_t rom_addr) {
     // setup seed for generating random numbers
     srand(time(NULL));
 
-    chip->pc = ROM_ADDRESS;
+    chip->rom_addr = rom_addr;
+    chip->pc = rom_addr;
     chip->i = 0x0000;
     chip->stack_index = 0;
     chip->st = 0;
@@ -73,7 +74,7 @@ void chip8_reset(struct Chip8 *chip) {
 }
 
 void chip8_load_rom(struct Chip8 *chip, const uint8_t *rom, size_t rom_length) {
-    chip8_mem_write_many(chip, ROM_ADDRESS, rom, rom_length);
+    chip8_mem_write_many(chip, chip->rom_addr, rom, rom_length);
 }
 
 void chip8_cycle(struct Chip8 *chip) {

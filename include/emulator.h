@@ -5,7 +5,27 @@
 #include <stdbool.h>
 #include "chip8.h"
 
+struct EmulatorConfig {
+    uint32_t ips;
+    uint16_t rom_addr;
+
+    struct {
+        int width;
+        int height;
+    } window;
+
+    struct {
+        int sample_rate;
+        double tone_hz;
+        float volume;
+        float amplitude;
+        bool mute;
+    } audio;
+};
+
 struct Emulator {
+    struct EmulatorConfig config;
+
     SDL_Window *window;
     SDL_Renderer *renderer;
 
@@ -17,7 +37,8 @@ struct Emulator {
     bool running;
 };
 
-void emu_init(struct Emulator *emu, uint8_t *rom, size_t rom_size);
+void emu_init_config(struct Emulator *emu);
+void emu_run(struct Emulator *emu, uint8_t *rom, size_t rom_size);
 void emu_destroy(struct Emulator *emu);
 
 #endif

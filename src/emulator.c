@@ -10,104 +10,49 @@
 #define SCREEN_WIDTH  640
 #define SCREEN_HEIGHT 320
 
-#define PIXEL_WIDTH  ((int)(SCREEN_WIDTH / DISPLAY_COLS))
-#define PIXEL_HEIGHT ((int)(SCREEN_HEIGHT / DISPLAY_ROWS))
+#define AUDIO_SAMPLE_RATE    44100
+#define AUDIO_TONE_HZ        440.0
+#define AUDIO_TONE_AMPLITUDE 0.5f
 
-#define AUDIO_FREQ     44100
-#define TONE_HZ        440.0
-#define TONE_AMPLITUDE 6000
-
-#define NS_PER_SEC 1000000000ULL
-#define IPS        700 // instructions p/s
-
-#define CYCLE_INTERVAL  (NS_PER_SEC / IPS) // IPS Hz
+#define NS_PER_SEC      1000000000ULL
 #define TIMERS_INTERVAL (NS_PER_SEC / 60)  // 60Hz
 #define RENDER_INTERVAL (NS_PER_SEC / 60)  // 60Hz
 
+#define IPS 700 // instructions p/s
+
 static void emu_init_sdl(struct Emulator *emu);
-static void emu_init_chip(struct Emulator *emu, uint8_t *rom, size_t rom_size);
-static void emu_start_loop(struct Emulator *emu);
+static void emu_init_chip(struct Emulator *emu);
 static void emu_render(struct Emulator *emu);
 static int8_t map_scancode(SDL_Scancode code);
 static void SDLCALL sdl_audio_cb(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
 
-void emu_init(struct Emulator *emu, uint8_t *rom, size_t rom_size) {
+void emu_init_config(struct Emulator *emu) {
+    // Default configuration for emulator
+    emu->config.ips = IPS;
+    emu->config.rom_addr = ROM_ADDRESS;
+
+    emu->config.window.width = SCREEN_WIDTH;
+    emu->config.window.height = SCREEN_HEIGHT;
+
+    emu->config.audio.sample_rate = AUDIO_SAMPLE_RATE;
+    emu->config.audio.tone_hz = AUDIO_TONE_HZ;
+    emu->config.audio.amplitude = AUDIO_TONE_AMPLITUDE;
+    emu->config.audio.volume = 1.0f;
+    emu->config.audio.mute = false;
+}
+
+void emu_run(struct Emulator *emu, uint8_t *rom, size_t rom_size) {
+    // initializes SDL and Chip8
     emu_init_sdl(emu);
-    emu_init_chip(emu, rom, rom_size);
-    emu_start_loop(emu);
-}
+    emu_init_chip(emu);
 
-void emu_destroy(struct Emulator *emu) {
-    chip8_destroy(emu->chip);
-    
-    if (emu->window) {
-        SDL_DestroyWindow(emu->window);
-        emu->window = NULL;
-    }
-    if (emu->renderer) {
-        SDL_DestroyRenderer(emu->renderer);
-        emu->renderer = NULL;
-    }
-    if (emu->audio_stream) {
-        SDL_DestroyAudioStream(emu->audio_stream);
-        emu->audio_stream = NULL;
-    }
-    
-    SDL_Quit();
-}
+    // loads the rom
+    chip8_load_rom(emu->chip, rom, rom_size);
 
-static void emu_init_sdl(struct Emulator *emu) {
-    if (!SDL_Init(SDL_INIT_AUDIO)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init(AUDIO) failed: %s\n", SDL_GetError());
-        exit(EXIT_FAILURE);
-    }
-
-    SDL_Window *window;
-    if ((window = SDL_CreateWindow(APP_TITLE, SCREEN_WIDTH, SCREEN_HEIGHT, 0)) == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL window initialization failed: %s\n", SDL_GetError());
-        exit(EXIT_FAILURE);
-    }
-
-    SDL_Renderer *renderer;
-    if ((renderer = SDL_CreateRenderer(window, NULL)) == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL renderer initialization failed: %s\n", SDL_GetError());
-        exit(EXIT_FAILURE);
-    }
-
-    SDL_AudioSpec audio_spec = {
-        .format = SDL_AUDIO_S16,
-        .channels = 1,
-        .freq = AUDIO_FREQ
-    };
-
-    SDL_AudioStream *audio_stream = SDL_OpenAudioDeviceStream(
-        SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &audio_spec, sdl_audio_cb, emu);
-    if (audio_stream == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_OpenAudioDeviceStream failed: %s\n", SDL_GetError());
-        exit(EXIT_FAILURE);
-    }
-
-    emu->window = window;
-    emu->renderer = renderer;
-    emu->audio_stream = audio_stream;
-    emu->audio_g_phase = 0;
-}
-
-static void emu_init_chip(struct Emulator *emu, uint8_t *rom, size_t rom_size) {
-    struct Chip8 *chip = malloc(sizeof(struct Chip8));
-    if (chip == NULL) {
-        fprintf(stderr, "Failed to allocate memory for the CHIP-8");
-        exit(EXIT_FAILURE);
-    }
-    
-    chip8_init(chip);
-    chip8_load_rom(chip, rom, rom_size);
-
-    emu->chip = chip;
-}
-
-static void emu_start_loop(struct Emulator *emu) {
+    // main loop
     emu->running = true;
+
+    const Uint64 cycle_interval = NS_PER_SEC / emu->config.ips;
 
     Uint64 next_cycle_tick = SDL_GetTicksNS();
     Uint64 next_timers_tick = SDL_GetTicksNS();
@@ -143,7 +88,7 @@ static void emu_start_loop(struct Emulator *emu) {
             
             if (now >= next_cycle_tick) {
                 chip8_cycle(emu->chip);
-                next_cycle_tick += CYCLE_INTERVAL;
+                next_cycle_tick += cycle_interval;
             }
             if (now >= next_timers_tick) {
                 chip8_update_timers(emu->chip);
@@ -172,7 +117,77 @@ static void emu_start_loop(struct Emulator *emu) {
     }
 }
 
+void emu_destroy(struct Emulator *emu) {
+    chip8_destroy(emu->chip);
+    
+    if (emu->window) {
+        SDL_DestroyWindow(emu->window);
+        emu->window = NULL;
+    }
+    if (emu->renderer) {
+        SDL_DestroyRenderer(emu->renderer);
+        emu->renderer = NULL;
+    }
+    if (emu->audio_stream) {
+        SDL_DestroyAudioStream(emu->audio_stream);
+        emu->audio_stream = NULL;
+    }
+    
+    SDL_Quit();
+}
+
+static void emu_init_sdl(struct Emulator *emu) {
+    if (!SDL_Init(SDL_INIT_AUDIO)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init(AUDIO) failed: %s\n", SDL_GetError());
+        exit(EXIT_FAILURE);
+    }
+
+    SDL_Window *window;
+    if ((window = SDL_CreateWindow(APP_TITLE, emu->config.window.width, emu->config.window.height, 0)) == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL window initialization failed: %s\n", SDL_GetError());
+        exit(EXIT_FAILURE);
+    }
+
+    SDL_Renderer *renderer;
+    if ((renderer = SDL_CreateRenderer(window, NULL)) == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL renderer initialization failed: %s\n", SDL_GetError());
+        exit(EXIT_FAILURE);
+    }
+
+    SDL_AudioSpec audio_spec = {
+        .format = SDL_AUDIO_S16,
+        .channels = 1,
+        .freq = emu->config.audio.sample_rate
+    };
+
+    SDL_AudioStream *audio_stream = SDL_OpenAudioDeviceStream(
+        SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &audio_spec, sdl_audio_cb, emu);
+    if (audio_stream == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_OpenAudioDeviceStream failed: %s\n", SDL_GetError());
+        exit(EXIT_FAILURE);
+    }
+
+    emu->window = window;
+    emu->renderer = renderer;
+    emu->audio_stream = audio_stream;
+    emu->audio_g_phase = 0;
+}
+
+static void emu_init_chip(struct Emulator *emu) {
+    struct Chip8 *chip = malloc(sizeof(struct Chip8));
+    if (chip == NULL) {
+        fprintf(stderr, "Failed to allocate memory for the CHIP-8");
+        exit(EXIT_FAILURE);
+    }
+    
+    chip8_init(chip, emu->config.rom_addr);
+    emu->chip = chip;
+}
+
 static void emu_render(struct Emulator *emu) {
+    const int pixel_width = emu->config.window.width / DISPLAY_COLS;
+    const int pixel_height = emu->config.window.height / DISPLAY_ROWS;
+    
     SDL_SetRenderDrawColor(emu->renderer, 139, 172, 15, 255);
     SDL_RenderClear(emu->renderer);
 
@@ -182,10 +197,10 @@ static void emu_render(struct Emulator *emu) {
         if (emu->chip->display->vram[i] != 1) continue;
         
         SDL_FRect rect = {
-            .x=(i % DISPLAY_COLS) * PIXEL_WIDTH,
-            .y=(int)(i / DISPLAY_COLS) * PIXEL_HEIGHT,
-            .w=PIXEL_WIDTH,
-            .h=PIXEL_HEIGHT
+            .x=(i % DISPLAY_COLS) * pixel_width,
+            .y=(int)(i / DISPLAY_COLS) * pixel_height,
+            .w=pixel_width,
+            .h=pixel_height
         };
         SDL_RenderFillRect(emu->renderer, &rect);
     }
@@ -233,11 +248,20 @@ static void SDLCALL sdl_audio_cb(void *userdata, SDL_AudioStream *stream, int ad
 
     struct Emulator *emu = (struct Emulator*)userdata;
 
-    double phase_inc = (4.0 * M_PI * TONE_HZ) / AUDIO_FREQ;
+    if (emu->config.audio.mute) {
+        SDL_memset(samples, 0, samples_needed * sizeof(int16_t));
+        SDL_PutAudioStreamData(stream, samples, samples_needed * sizeof(int16_t));
+        free(samples);
+        return;
+    }
+
+    double phase_inc = (2.0 * M_PI * emu->config.audio.tone_hz) / emu->config.audio.sample_rate;
+    float gain = emu->config.audio.amplitude * emu->config.audio.volume;
+    
     for (int i = 0; i < samples_needed; i++) {
-        samples[i] = (int16_t)(SDL_sin(emu->audio_g_phase) * TONE_AMPLITUDE);
+        samples[i] = (int16_t)(SDL_sin(emu->audio_g_phase) * gain * INT16_MAX);
         emu->audio_g_phase += phase_inc;
-        if (emu->audio_g_phase >= 4.0 * M_PI) emu->audio_g_phase -= 4.0 * M_PI;
+        if (emu->audio_g_phase >= 2.0 * M_PI) emu->audio_g_phase -= 2.0 * M_PI;
     }
 
     SDL_PutAudioStreamData(stream, samples, samples_needed * sizeof(int16_t));

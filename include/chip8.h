@@ -13,6 +13,9 @@ extern const uint16_t FONT_ADDRESS;
 struct Chip8 {
     // 4KiB of memory (same as original)
     uint8_t mem[4096];
+
+    // the start address of the rom
+    uint16_t rom_addr;
     
     // program counter register (approx.: 12-bit)
     uint16_t pc;
@@ -45,7 +48,7 @@ struct Chip8 {
     void (*on_cycle)(struct Chip8*);
 };
 
-void chip8_init(struct Chip8 *chip);
+void chip8_init(struct Chip8 *chip, uint16_t rom_addr);
 void chip8_reset(struct Chip8 *chip);
 void chip8_load_rom(struct Chip8 *chip, const uint8_t *rom, size_t rom_length);
 void chip8_cycle(struct Chip8 *chip);
