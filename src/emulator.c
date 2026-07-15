@@ -6,6 +6,12 @@
 #include "display.h"
 #include "chip8.h"
 
+#define APP_TITLE     "Chip8 Emulator"
+
+#define NS_PER_SEC      1000000000ULL
+#define TIMERS_INTERVAL (NS_PER_SEC / 60)  // 60Hz
+#define RENDER_INTERVAL (NS_PER_SEC / 60)  // 60Hz
+
 static void emu_init_sdl(struct Emulator *emu);
 static void emu_init_chip(struct Emulator *emu);
 static void emu_render(struct Emulator *emu);
