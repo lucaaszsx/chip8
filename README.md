@@ -1,12 +1,18 @@
 # CHIP-8 Emulator
 
-In this repository is my implementation that I built in C of a [CHIP-8](https://en.wikipedia.org/wiki/CHIP-8) emulator, where I created a system that simulates the hardware on which this interpreted language ran, and which is capable of executing programs (the so-called ROMs) that are based on its Instruction Set Architecture (ISA).
+<p align="center">
+    <img src="https://img.shields.io/badge/C-00599C.svg?style=for-the-badge&logo=c&logoColor=white">
+    <a href="https://github.com/libsdl-org/SDL">
+        <img src="https://img.shields.io/badge/SDL3-0088CC.svg?style=for-the-badge&logo=sdl&logoColor=white">
+    </a>
+</p>
+
+In this repository is my implementation that I built in pure C of a [CHIP-8](https://en.wikipedia.org/wiki/CHIP-8) emulator, where I created a system that simulates the hardware on which this interpreted language ran, and which is capable of executing programs (the so-called ROMs) that are based on its Instruction Set Architecture (ISA). To simulate the display and play sounds, I used the SDL3 library.
 
 ## Table of Contents
 
 - [What is CHIP-8?](#what-is-chip-8)
   - [VM Description](#vm-description)
-- [Project Overview](#project-overview)
 - [Using the Emulator](#using-the-emulator)
   - [Requirements](#requirements)
   - [Installation](#installation)
@@ -34,17 +40,6 @@ CHIP-8 is an interpreted language that was developed by Joseph Weisbecker in 197
 
 > [!WARNING]
 > In this emulator, I implemented 34 of the 35 original instructions, given that the unimplemented instruction (`0NNN`, or `sys`) was used to execute machine code outside the Chip-8 interpreter, something that would not be useful in this context and is not required for most ROMs.
-
-## Project Overview
-
-<p align="center">
-    <img src="https://img.shields.io/badge/C-00599C.svg?style=for-the-badge&logo=c&logoColor=white">
-    <a href="https://github.com/libsdl-org/SDL">
-        <img src="https://img.shields.io/badge/SDL3-0088CC.svg?style=for-the-badge&logo=sdl&logoColor=white">
-    </a>
-</p>
-
-In this project, I implemented a full CHIP-8 emulator in pure C, capable of loading and running compatible ROMs. To simulate the display and play sounds, I used the SDL3 library.
 
 ## Using the Emulator
 
