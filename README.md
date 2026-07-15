@@ -52,12 +52,16 @@ CHIP-8 is an interpreted language that was developed by Joseph Weisbecker in 197
     - [Keypad test](https://github.com/Timendus/chip8-test-suite#keypad-test)
     - [Beep test](https://github.com/Timendus/chip8-test-suite#beep-test)
 
-<p align="center">
-    <img src="assets/tests/corax+_test.png" width="200">
-    <img src="assets/tests/flags_test.png" width="200">
-    <img src="assets/tests/keypad_test.png" width="200">
-    <img src="assets/tests/beep_test.png" width="200">
-</p>
+<table align="center">
+  <tr>
+    <td><img src="assets/tests/corax+_test.png" width="200"></td>
+    <td><img src="assets/tests/flags_test.png" width="200"></td>
+  </tr>
+  <tr>
+    <td><img src="assets/tests/keypad_test.png" width="200"></td>
+    <td><img src="assets/tests/beep_test.png" width="200"></td>
+  </tr>
+</table>
 
 ## Using the Emulator
 
