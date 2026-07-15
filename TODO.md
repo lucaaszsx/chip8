@@ -15,4 +15,5 @@ List of implementations already completed or pending for this project.
     - [x] ROM start address
     - [x] Window options (size, scale, fg/bg color)
     - [x] Audio (Hz, volume, amplitude, mute flag)
+- [ ] Add an interactive system to the CLI for ROM selection
 - [ ] Add debugger
