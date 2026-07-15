@@ -59,5 +59,6 @@ struct Emulator {
 void emu_init_config(struct Emulator *emu);
 void emu_run(struct Emulator *emu, uint8_t *rom, size_t rom_size);
 void emu_destroy(struct Emulator *emu);
+SDL_Color emu_parse_color(int raw_color);
 
 #endif
