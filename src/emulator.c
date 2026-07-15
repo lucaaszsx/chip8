@@ -6,20 +6,6 @@
 #include "display.h"
 #include "chip8.h"
 
-#define APP_TITLE     "Chip8 Emulator"
-#define SCREEN_WIDTH  640
-#define SCREEN_HEIGHT 320
-
-#define AUDIO_SAMPLE_RATE    44100
-#define AUDIO_TONE_HZ        440.0
-#define AUDIO_TONE_AMPLITUDE 0.5f
-
-#define NS_PER_SEC      1000000000ULL
-#define TIMERS_INTERVAL (NS_PER_SEC / 60)  // 60Hz
-#define RENDER_INTERVAL (NS_PER_SEC / 60)  // 60Hz
-
-#define IPS 700 // instructions p/s
-
 static void emu_init_sdl(struct Emulator *emu);
 static void emu_init_chip(struct Emulator *emu);
 static void emu_render(struct Emulator *emu);
