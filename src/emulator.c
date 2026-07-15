@@ -28,11 +28,13 @@ static void SDLCALL sdl_audio_cb(void *userdata, SDL_AudioStream *stream, int ad
 
 void emu_init_config(struct Emulator *emu) {
     // Default configuration for emulator
-    emu->config.ips = IPS;
+    emu->config.ips = DEFAULT_IPS;
     emu->config.rom_addr = ROM_ADDRESS;
 
-    emu->config.window.width = SCREEN_WIDTH;
-    emu->config.window.height = SCREEN_HEIGHT;
+    emu->config.window.width = WINDOW_WIDTH;
+    emu->config.window.height = WINDOW_HEIGHT;
+    emu->config.window.bg_color = WINDOW_BG_COLOR;
+    emu->config.window.fg_color = WINDOW_FG_COLOR;
 
     emu->config.audio.sample_rate = AUDIO_SAMPLE_RATE;
     emu->config.audio.tone_hz = AUDIO_TONE_HZ;
@@ -187,11 +189,13 @@ static void emu_init_chip(struct Emulator *emu) {
 static void emu_render(struct Emulator *emu) {
     const int pixel_width = emu->config.window.width / DISPLAY_COLS;
     const int pixel_height = emu->config.window.height / DISPLAY_ROWS;
-    
-    SDL_SetRenderDrawColor(emu->renderer, 139, 172, 15, 255);
+    const SDL_Color bg = emu->config.window.bg_color;
+    const SDL_Color fg = emu->config.window.fg_color;
+
+    SDL_SetRenderDrawColor(emu->renderer, bg.r, bg.g, bg.b, bg.a);
     SDL_RenderClear(emu->renderer);
 
-    SDL_SetRenderDrawColor(emu->renderer, 48, 98, 48, 255);
+    SDL_SetRenderDrawColor(emu->renderer, fg.r, fg.g, fg.b, fg.a);
     
     for (size_t i = 0; i < DISPLAY_SIZE; i++) {
         if (emu->chip->display->vram[i] != 1) continue;
