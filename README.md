@@ -13,6 +13,7 @@ In this repository is my implementation that I built in pure C of a [CHIP-8](htt
 
 - [What is CHIP-8?](#what-is-chip-8)
   - [VM Description](#vm-description)
+- [Features](#features)
 - [Using the Emulator](#using-the-emulator)
   - [Requirements](#requirements)
   - [Installation](#installation)
@@ -40,6 +41,23 @@ CHIP-8 is an interpreted language that was developed by Joseph Weisbecker in 197
 
 > [!WARNING]
 > In this emulator, I implemented 34 of the 35 original instructions, given that the unimplemented instruction (`0NNN`, or `sys`) was used to execute machine code outside the Chip-8 interpreter, something that would not be useful in this context and is not required for most ROMs.
+
+## Features
+
+- Configurable emulator (IPS, window, audio...).
+- Well optimized, the ROMs I tested ran smoothly.
+- Successfully passed tests for CHIP-8:
+    - [Corax+ opcode test](https://github.com/Timendus/chip8-test-suite#corax-opcode-test)
+    - [Flags test](https://github.com/Timendus/chip8-test-suite#flags-test)
+    - [Keypad test](https://github.com/Timendus/chip8-test-suite#keypad-test)
+    - [Beep test](https://github.com/Timendus/chip8-test-suite#beep-test)
+
+<p align="center">
+    <img src="assets/tests/corax+_test.png" width="200">
+    <img src="assets/tests/flags_test.png" width="200">
+    <img src="assets/tests/keypad_test.png" width="200">
+    <img src="assets/tests/beep_test.png" width="200">
+</p>
 
 ## Using the Emulator
 
