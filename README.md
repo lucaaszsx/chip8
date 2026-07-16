@@ -11,8 +11,6 @@ In this repository is my implementation that I built in pure C of a [CHIP-8](htt
 
 ## Preview
 
-## Running Games
-
 <table>
     <tr>
         <td align="center">
