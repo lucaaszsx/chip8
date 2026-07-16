@@ -24,12 +24,12 @@ In this repository is my implementation that I built in pure C of a [CHIP-8](htt
     </tr>
     <tr>
         <td align="center">
-            <strong>Addition Problems</strong><br>
-            <img src="assets/preview/add_problems.png" width="200">
-        </td>
-        <td align="center">
             <strong>Brix</strong><br>
             <img src="assets/preview/brix.gif" width="200">
+        </td>
+        <td align="center">
+            <strong>Addition Problems</strong><br>
+            <img src="assets/preview/add_problems.png" width="200">
         </td>
     </tr>
 </table>
