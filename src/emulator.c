@@ -110,7 +110,6 @@ void emu_run(struct Emulator *emu, uint8_t *rom, size_t rom_size) {
 
         Uint64 next = next_cycle_tick;
         if (next_timers_tick < next) next = next_timers_tick;
-        if (next_render_tick < next) next = next_render_tick;
 
         now = SDL_GetTicksNS();
         if (next > now) SDL_DelayNS(next - now); 
