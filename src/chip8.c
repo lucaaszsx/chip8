@@ -46,15 +46,8 @@ void chip8_init(struct Chip8 *chip, uint16_t rom_addr) {
     // setup seed for generating random numbers
     srand(time(NULL));
 
+    // setup rom starting address
     chip->rom_addr = rom_addr;
-    chip->pc = rom_addr;
-    chip->i = 0x0000;
-    chip->stack_index = 0;
-    chip->st = 0;
-    chip->dt = 0;
-    chip->display = malloc(sizeof(struct Chip8Display));
-    chip->keypad = malloc(sizeof(struct Chip8Keypad));
-    chip->on_cycle = NULL;
     
     // cleanup and then writes the standard font in memory
     chip8_reset(chip);
@@ -62,6 +55,15 @@ void chip8_init(struct Chip8 *chip, uint16_t rom_addr) {
 }
 
 void chip8_reset(struct Chip8 *chip) {
+    chip->pc = chip->rom_addr;
+    chip->i = 0x0000;
+    chip->stack_index = 0;
+    chip->st = 0;
+    chip->dt = 0;
+    chip->display = malloc(sizeof(struct Chip8Display));
+    chip->keypad = malloc(sizeof(struct Chip8Keypad));
+    chip->on_cycle = NULL;
+
     memset(chip->v, 0, sizeof(chip->v));
     memset(chip->stack, 0, sizeof(chip->stack));
     memset(chip->mem, 0, sizeof(chip->mem));
