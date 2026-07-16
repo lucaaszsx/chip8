@@ -131,7 +131,14 @@ static void show_help_message(FILE *stream, char *executable) {
         "        --hz        Audio tone HZ (default=%.2f)\n"
         "        --amplitude Audio amplitude (default=%.2f)\n\n"
         "    Flags:\n"
-        "        --mute      If the audio should be muted\n",
+        "        --mute      If the audio should be muted\n\n"
+        "Controls:\n"
+        "    Keypad:\n"
+        "        1 2 3 4\n"
+        "        Q W E R\n"
+        "        A S D F\n"
+        "        Z X C V\n"
+        "    ESC - Reset the emulator (be careful, your progress will be lost)\n\n",
         executable,
         executable,
 
