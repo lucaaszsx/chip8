@@ -57,66 +57,66 @@ void emu_run(struct Emulator *emu, uint8_t *rom, size_t rom_size) {
     SDL_Event event;
     while (true) {
         loop_start:
-            if (!emu->running) break;
+        if (!emu->running) break;
 
-            while (SDL_PollEvent(&event)) {
-                switch (event.type) {
-                    case SDL_EVENT_KEY_DOWN: {
-                        SDL_Scancode sc = event.key.scancode;
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_EVENT_KEY_DOWN: {
+                    SDL_Scancode sc = event.key.scancode;
 
-                         // esc -> resets the emulator
-                        if (sc == SDL_SCANCODE_ESCAPE && !event.key.repeat) {
-                            emu_reset(emu);
-                            goto run_init;
-                        }
-
-                        int8_t key = map_scancode(sc);
-                        if (key > -1) chip8_keypad_press(emu->chip->keypad, key);
-                        break;
+                        // esc -> resets the emulator
+                    if (sc == SDL_SCANCODE_ESCAPE && !event.key.repeat) {
+                        emu_reset(emu);
+                        goto run_init;
                     }
-    
-                    case SDL_EVENT_KEY_UP: {
-                        int8_t key = map_scancode(event.key.scancode);
-                        if (key > -1) chip8_keypad_release(emu->chip->keypad, key);
-                        break;
-                    }
-    
-                    case SDL_EVENT_QUIT:
-                        emu->running = false;
-                        goto loop_start;
+
+                    int8_t key = map_scancode(sc);
+                    if (key > -1) chip8_keypad_press(emu->chip->keypad, key);
+                    break;
                 }
-            }
-    
-            Uint64 now = SDL_GetTicksNS();
-            
-            if (now >= next_cycle_tick) {
-                chip8_cycle(emu->chip);
-                next_cycle_tick += cycle_interval;
-            }
-            if (now >= next_timers_tick) {
-                chip8_update_timers(emu->chip);
-                next_timers_tick += TIMERS_INTERVAL;
-    
-                if (emu->chip->st > 0 && !emu->beeping) {
-                    SDL_ResumeAudioStreamDevice(emu->audio_stream);
-                    emu->beeping = true;
-                } else if (emu->chip->st == 0 && emu->beeping) {
-                    SDL_PauseAudioStreamDevice(emu->audio_stream);
-                    SDL_ClearAudioStream(emu->audio_stream);
-                    emu->beeping = false;
+
+                case SDL_EVENT_KEY_UP: {
+                    int8_t key = map_scancode(event.key.scancode);
+                    if (key > -1) chip8_keypad_release(emu->chip->keypad, key);
+                    break;
                 }
+
+                case SDL_EVENT_QUIT:
+                    emu->running = false;
+                    goto loop_start;
             }
-            if (now >= next_render_tick) {
-                emu_render(emu);
-                next_render_tick += RENDER_INTERVAL;
+        }
+
+        Uint64 now = SDL_GetTicksNS();
+        
+        if (now >= next_cycle_tick) {
+            chip8_cycle(emu->chip);
+            next_cycle_tick += cycle_interval;
+        }
+        if (now >= next_timers_tick) {
+            chip8_update_timers(emu->chip);
+            next_timers_tick += TIMERS_INTERVAL;
+
+            if (emu->chip->st > 0 && !emu->beeping) {
+                SDL_ResumeAudioStreamDevice(emu->audio_stream);
+                emu->beeping = true;
+            } else if (emu->chip->st == 0 && emu->beeping) {
+                SDL_PauseAudioStreamDevice(emu->audio_stream);
+                SDL_ClearAudioStream(emu->audio_stream);
+                emu->beeping = false;
             }
-    
-            Uint64 next = next_cycle_tick;
-            if (next_timers_tick < next) next = next_timers_tick;
-            if (next_render_tick < next) next = next_render_tick;
-    
-            now = SDL_GetTicksNS();
-            if (next > now) SDL_DelayNS(next - now); 
+        }
+        if (now >= next_render_tick) {
+            emu_render(emu);
+            next_render_tick += RENDER_INTERVAL;
+        }
+
+        Uint64 next = next_cycle_tick;
+        if (next_timers_tick < next) next = next_timers_tick;
+        if (next_render_tick < next) next = next_render_tick;
+
+        now = SDL_GetTicksNS();
+        if (next > now) SDL_DelayNS(next - now); 
     }
 }
 
