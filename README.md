@@ -11,7 +11,7 @@ In this repository is my implementation that I built in pure C of a [CHIP-8](htt
 
 ## Preview
 
-<table>
+<table align="center">
     <tr>
         <td align="center">
             <strong>IBM Logo</strong><br>
