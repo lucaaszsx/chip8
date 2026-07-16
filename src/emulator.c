@@ -12,6 +12,7 @@
 #define TIMERS_INTERVAL (NS_PER_SEC / 60)  // 60Hz
 #define RENDER_INTERVAL (NS_PER_SEC / 60)  // 60Hz
 
+static void emu_reset(struct Emulator *emu);
 static void emu_init_sdl(struct Emulator *emu);
 static void emu_init_chip(struct Emulator *emu);
 static void emu_render(struct Emulator *emu);
@@ -40,6 +41,7 @@ void emu_run(struct Emulator *emu, uint8_t *rom, size_t rom_size) {
     emu_init_sdl(emu);
     emu_init_chip(emu);
 
+    run_init:
     // loads the rom
     chip8_load_rom(emu->chip, rom, rom_size);
 
@@ -60,7 +62,15 @@ void emu_run(struct Emulator *emu, uint8_t *rom, size_t rom_size) {
             while (SDL_PollEvent(&event)) {
                 switch (event.type) {
                     case SDL_EVENT_KEY_DOWN: {
-                        int8_t key = map_scancode(event.key.scancode);
+                        SDL_Scancode sc = event.key.scancode;
+
+                         // esc -> resets the emulator
+                        if (sc == SDL_SCANCODE_ESCAPE && !event.key.repeat) {
+                            emu_reset(emu);
+                            goto run_init;
+                        }
+
+                        int8_t key = map_scancode(sc);
                         if (key > -1) chip8_keypad_press(emu->chip->keypad, key);
                         break;
                     }
@@ -74,7 +84,6 @@ void emu_run(struct Emulator *emu, uint8_t *rom, size_t rom_size) {
                     case SDL_EVENT_QUIT:
                         emu->running = false;
                         goto loop_start;
-                        break;
                 }
             }
     
@@ -102,7 +111,7 @@ void emu_run(struct Emulator *emu, uint8_t *rom, size_t rom_size) {
                 next_render_tick += RENDER_INTERVAL;
             }
     
-            uint64_t next = next_cycle_tick;
+            Uint64 next = next_cycle_tick;
             if (next_timers_tick < next) next = next_timers_tick;
             if (next_render_tick < next) next = next_render_tick;
     
@@ -128,6 +137,18 @@ void emu_destroy(struct Emulator *emu) {
     }
     
     SDL_Quit();
+}
+
+static void emu_reset(struct Emulator *emu) {
+    chip8_reset(emu->chip);
+    emu->running = false;
+
+    if (emu->beeping) {
+        SDL_PauseAudioStreamDevice(emu->audio_stream);
+        SDL_ClearAudioStream(emu->audio_stream);
+        emu->beeping = false;
+    }
+    emu->audio_g_phase = 0;
 }
 
 static void emu_init_sdl(struct Emulator *emu) {
