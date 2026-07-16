@@ -44,6 +44,12 @@ struct Chip8 {
     // keypad
     struct Chip8Keypad *keypad;
 
+    // flag to indicate whether or not anything was drawn on the screen
+    bool draw_flag;
+
+    // total cycles during the run
+    uint64_t total_cycles;
+
     // callback to call every cpu cycle
     void (*on_cycle)(struct Chip8*);
 };

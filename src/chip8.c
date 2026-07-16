@@ -63,6 +63,8 @@ void chip8_reset(struct Chip8 *chip) {
     chip->dt = 0;
     chip->display = malloc(sizeof(struct Chip8Display));
     chip->keypad = malloc(sizeof(struct Chip8Keypad));
+    chip->draw_flag = false;
+    chip->total_cycles = 0;
 
     memset(chip->v, 0, sizeof(chip->v));
     memset(chip->stack, 0, sizeof(chip->stack));
@@ -80,6 +82,8 @@ void chip8_load_rom(struct Chip8 *chip, const uint8_t *rom, size_t rom_length) {
 }
 
 void chip8_cycle(struct Chip8 *chip) {
+    chip->total_cycles++;
+
     uint16_t opcode = chip8_fetch_word(chip);
     if (opcode == OPCODE_NOP) return;
     

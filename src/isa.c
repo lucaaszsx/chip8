@@ -14,6 +14,7 @@ static uint16_t chip8_NNN(uint16_t opcode);
 
 void chip8_isa_cls(struct Chip8 *chip) {
     chip8_display_reset(chip->display);
+    chip->draw_flag = true;
 }
 
 void chip8_isa_rts(struct Chip8 *chip) {
@@ -138,6 +139,7 @@ void chip8_isa_draw(struct Chip8 *chip, uint16_t opcode) {
     }
     
     chip->v[0xf] = chip8_display_draw(chip->display, x, y, n, sprite);
+    chip->draw_flag = true;
 }
 
 void chip8_isa_skpr(struct Chip8 *chip, uint16_t opcode) {

@@ -9,8 +9,7 @@
 #define APP_TITLE     "Chip8 Emulator"
 
 #define NS_PER_SEC      1000000000ULL
-#define TIMERS_INTERVAL (NS_PER_SEC / 60)  // 60Hz
-#define RENDER_INTERVAL (NS_PER_SEC / 60)  // 60Hz
+#define TIMERS_INTERVAL (NS_PER_SEC / 60) // 60Hz
 
 static void emu_reset(struct Emulator *emu);
 static void emu_init_sdl(struct Emulator *emu);
@@ -52,7 +51,6 @@ void emu_run(struct Emulator *emu, uint8_t *rom, size_t rom_size) {
 
     Uint64 next_cycle_tick = SDL_GetTicksNS();
     Uint64 next_timers_tick = SDL_GetTicksNS();
-    Uint64 next_render_tick = SDL_GetTicksNS();
 
     SDL_Event event;
     while (true) {
@@ -64,7 +62,7 @@ void emu_run(struct Emulator *emu, uint8_t *rom, size_t rom_size) {
                 case SDL_EVENT_KEY_DOWN: {
                     SDL_Scancode sc = event.key.scancode;
 
-                        // esc -> resets the emulator
+                    // esc -> resets the emulator
                     if (sc == SDL_SCANCODE_ESCAPE && !event.key.repeat) {
                         emu_reset(emu);
                         goto run_init;
@@ -106,10 +104,9 @@ void emu_run(struct Emulator *emu, uint8_t *rom, size_t rom_size) {
                 emu->beeping = false;
             }
         }
-        if (now >= next_render_tick) {
-            emu_render(emu);
-            next_render_tick += RENDER_INTERVAL;
-        }
+
+        // renders the screen
+        emu_render(emu);
 
         Uint64 next = next_cycle_tick;
         if (next_timers_tick < next) next = next_timers_tick;
@@ -200,6 +197,8 @@ static void emu_init_chip(struct Emulator *emu) {
 }
 
 static void emu_render(struct Emulator *emu) {
+    if (!emu->chip->draw_flag) return;
+
     const int pixel_width = emu->config.window.width / DISPLAY_COLS;
     const int pixel_height = emu->config.window.height / DISPLAY_ROWS;
     const SDL_Color bg = emu->config.window.bg_color;
@@ -223,6 +222,9 @@ static void emu_render(struct Emulator *emu) {
     }
 
     SDL_RenderPresent(emu->renderer);
+
+    // resets the draw flag
+    emu->chip->draw_flag = false;
 }
 
 static int8_t map_scancode(SDL_Scancode code) {
