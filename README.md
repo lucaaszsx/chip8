@@ -9,6 +9,33 @@
 
 In this repository is my implementation that I built in pure C of a [CHIP-8](https://en.wikipedia.org/wiki/CHIP-8) emulator, where I created a system that simulates the hardware on which this interpreted language ran, and which is capable of executing programs (the so-called ROMs) that are based on its Instruction Set Architecture (ISA). To simulate the display and play sounds, I used the SDL3 library.
 
+## Preview
+
+## Running Games
+
+<table>
+    <tr>
+        <td align="center">
+            <strong>IBM Logo</strong><br>
+            <img src="assets/preview/ibm_logo.png" width="200">
+        </td>
+        <td align="center">
+            <strong>Tetris</strong><br>
+            <img src="assets/preview/tetris.gif" width="200">
+        </td>
+    </tr>
+    <tr>
+        <td align="center">
+            <strong>Addition Problems</strong><br>
+            <img src="assets/preview/add_problems.png" width="200">
+        </td>
+        <td align="center">
+            <strong>Brix</strong><br>
+            <img src="assets/preview/brix.gif" width="200">
+        </td>
+    </tr>
+</table>
+
 ## Table of Contents
 
 - [What is CHIP-8?](#what-is-chip-8)
