@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 #include "emulator.h"
 #include "chip8.h"
 
@@ -8,6 +9,9 @@ static void show_help_message(FILE *stream, char *executable);
 static int get_raw_color(SDL_Color color);
 
 int main(int argc, char **argv) {
+    // setup seed for generating random numbers
+    srand(time(NULL));
+
     char *rom_path = NULL;
     struct Emulator emu;
     emu_init_config(&emu);
