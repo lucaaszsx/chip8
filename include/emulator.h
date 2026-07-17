@@ -1,5 +1,4 @@
-#ifndef EMULATOR_H
-#define EMULATOR_H
+#pragma once
 
 #include <SDL3/SDL.h>
 #include <stdbool.h>
@@ -54,5 +53,3 @@ void emu_init_config(struct Emulator *emu);
 void emu_run(struct Emulator *emu, uint8_t *rom, size_t rom_size);
 void emu_destroy(struct Emulator *emu);
 SDL_Color emu_parse_color(int raw_color);
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef KEYPAD_H
-#define KEYPAD_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -33,5 +32,3 @@ void chip8_keypad_release(struct Chip8Keypad *keypad, uint8_t key);
 bool chip8_keypad_pressed(struct Chip8Keypad *keypad, uint8_t key);
 void chip8_keypad_wait(struct Chip8Keypad *keypad);
 bool chip8_keypad_poll(struct Chip8Keypad *keypad, uint8_t *key_out);
-
-#endif

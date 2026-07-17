@@ -1,5 +1,4 @@
-#ifndef CHIP8_ISA_H
-#define CHIP8_ISA_H
+#pragma once
 
 #include <stdint.h>
 #include "chip8.h"
@@ -35,5 +34,3 @@ void chip8_isa_font(struct Chip8 *chip, uint16_t opcode);
 void chip8_isa_bcd(struct Chip8 *chip, uint16_t opcode);
 void chip8_isa_str(struct Chip8 *chip, uint16_t opcode);
 void chip8_isa_ldr(struct Chip8 *chip, uint16_t opcode);
-
-#endif
