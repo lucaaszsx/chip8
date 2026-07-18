@@ -11,7 +11,7 @@ static char lex_peek(struct Lex *lex);
 static char lex_lookahead(struct Lex *lex);
 static void lex_skip_trivia(struct Lex *lex);
 struct Token *lex_next_token(struct Lex *lex);
-static void lex_prepare_tk(struct Lex *lex, struct Token *tk, TokenType type, size_t start, size_t end);
+static void lex_set_tk_raw(struct Lex *lex, struct Token *tk, TokenType type, size_t start, size_t end);
 static bool lex_eof(struct Lex *lex);
 static bool is_hex_digit(char c);
 static bool is_delimiter(char c);
@@ -78,7 +78,7 @@ struct Token *lex_next_token(struct Lex *lex) {
     token->column = lex->column;
 
     if (lex_peek(lex) == '\0') {
-        lex_prepare_tk(lex, token, TK_EOF, lex->pos, lex->pos);
+        lex_set_tk_raw(lex, token, TK_EOF, lex->pos, lex->pos);
         return token;
     }
 
@@ -86,21 +86,21 @@ struct Token *lex_next_token(struct Lex *lex) {
         size_t start = lex->pos;
 
         while (isalnum(lex_peek(lex)) || lex_peek(lex) == '_') lex_advance(lex);
-        lex_prepare_tk(lex, token, TK_IDENTIFIER, start, lex->pos);
+        lex_set_tk_raw(lex, token, TK_IDENTIFIER, start, lex->pos);
     } else if (lex_peek(lex) == '0' && tolower(lex_lookahead(lex)) == 'x') { // 0x
         lex_skip(lex, 2); // skip "0x"
 
         size_t start = lex->pos;
 
         while (is_hex_digit(lex_peek(lex))) lex_advance(lex);
-        lex_prepare_tk(lex, token, TK_INT_HEX, start, lex->pos);
+        lex_set_tk_raw(lex, token, TK_INT_HEX, start, lex->pos);
     } else if (isdigit(lex_peek(lex))) {
         size_t start = lex->pos;
 
         while (isdigit(lex_peek(lex))) lex_advance(lex);
-        lex_prepare_tk(lex, token, TK_INT, start, lex->pos);
+        lex_set_tk_raw(lex, token, TK_INT, start, lex->pos);
     } else if (is_delimiter(lex_peek(lex))) {
-        lex_prepare_tk(lex, token, get_delimiter_type(lex_advance(lex)), lex->pos, lex->pos + 1);
+        lex_set_tk_raw(lex, token, get_delimiter_type(lex_advance(lex)), lex->pos, lex->pos + 1);
     } else {
         fprintf(stderr, "invalid or unexpected token at %zu:%zu: %c\n", lex->line, lex->column, lex_peek(lex));
         exit(EXIT_FAILURE);
@@ -109,7 +109,7 @@ struct Token *lex_next_token(struct Lex *lex) {
     return token;
 }
 
-static void lex_prepare_tk(struct Lex *lex, struct Token *tk, TokenType type, size_t start, size_t end) {
+static void lex_set_tk_raw(struct Lex *lex, struct Token *tk, TokenType type, size_t start, size_t end) {
     size_t len = end - start;
 
     tk->raw = malloc(len + 1);
