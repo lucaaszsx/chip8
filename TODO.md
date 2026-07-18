@@ -18,3 +18,4 @@ List of implementations already completed or pending for this project.
 - [ ] Add an interactive system to the CLI for ROM selection
 - [ ] Add debugger
 - [ ] Add assembler
+- [ ] Fix memory leaks (remove unnecessary allocations, free when no longer in use)
