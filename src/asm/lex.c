@@ -9,7 +9,7 @@ static char lex_advance(struct Lex *lex);
 static char lex_skip(struct Lex *lex, size_t n);
 static char lex_peek(struct Lex *lex);
 static char lex_lookahead(struct Lex *lex);
-static char lex_skip_trivia(struct Lex *lex);
+static void lex_skip_trivia(struct Lex *lex);
 static void lex_create_tk(struct Lex *lex, struct Token **out);
 static void lex_set_tk_raw(struct Lex *lex, struct Token *tk, TokenType type, size_t start, size_t end);
 static bool lex_eof(struct Lex *lex);
@@ -116,7 +116,7 @@ static char lex_lookahead(struct Lex *lex) {
     return lex->src[lex->pos + 1];
 }
 
-static char lex_skip_trivia(struct Lex *lex) {
+static void lex_skip_trivia(struct Lex *lex) {
     while (true) {
         if (isspace(lex_peek(lex))) lex_advance(lex);
         else if (lex_peek(lex) == ';') {
