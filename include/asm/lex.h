@@ -20,8 +20,8 @@ typedef enum {
 
 struct Token {
     TokenType type;
-    uint32_t line;
-    uint32_t column;
+    size_t line;
+    size_t column;
     char *raw;
 };
 
