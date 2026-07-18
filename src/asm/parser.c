@@ -8,7 +8,7 @@
 static Statement *parser_stmt(struct Parser *parser);
 static Statement *parser_directive_stmt(struct Parser *parser);
 static Statement *parser_label_stmt(struct Parser *parser);
-static Statement *parser_create_stmt(struct Parser *parser, StatementType type, Statement **out);
+static Statement *parser_create_stmt(StatementType type, Statement **out);
 static DirectiveType get_directive_type(char *raw);
 
 void parser_parse() {
@@ -26,7 +26,7 @@ static Statement *parser_stmt(struct Parser *parser) {
             return parser_label_stmt(parser);
 
         default:
-            fprintf(stderr, "unexpected token at %zu:%zu: %s", tk->line, tk->column, tk->raw);
+            fprintf(stderr, "unexpected token at %zu:%zu: %s\n", tk->line, tk->column, tk->raw);
             exit(EXIT_FAILURE);
     }
 }
@@ -54,7 +54,7 @@ static Statement *parser_label_stmt(struct Parser *parser) {
     return stmt;
 }
 
-static Statement *parser_create_stmt(struct Parser *parser, StatementType type, Statement **out) {
+static Statement *parser_create_stmt(StatementType type, Statement **out) {
     Statement *tmp = malloc(sizeof(Statement));
     if (tmp == NULL) {
         fprintf(stderr, "memory allocation for a statement failed\n");
