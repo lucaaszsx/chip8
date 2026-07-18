@@ -5,8 +5,7 @@
 
 typedef enum {
     TK_IDENTIFIER,
-    TK_INT_HEX,
-    TK_INT,
+    TK_NUMBER,
 
     // Delimiters
     TK_SEMICOLON,
@@ -23,6 +22,7 @@ struct Token {
     size_t line;
     size_t column;
     char *raw;
+    uint16_t value;
 };
 
 struct Lex {
@@ -31,8 +31,10 @@ struct Lex {
     size_t line;
     size_t column;
     size_t pos;
+    struct Token *current;
 };
 
 void lex_init(struct Lex *lex);
-struct Token *lex_next_token(struct Lex *lex);
-char *token_type_name(const struct Token *tk);
+void *lex_next_token(struct Lex *lex);
+void *lex_expect(struct Lex *lex, TokenType expected);
+char *token_type_name(TokenType type);
