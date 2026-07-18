@@ -17,3 +17,4 @@ List of implementations already completed or pending for this project.
     - [x] Audio (Hz, volume, amplitude, mute flag)
 - [ ] Add an interactive system to the CLI for ROM selection
 - [ ] Add debugger
+- [ ] Add assembler
