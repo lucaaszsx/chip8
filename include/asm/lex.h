@@ -32,3 +32,7 @@ struct Lex {
     size_t column;
     size_t pos;
 };
+
+void lex_init(struct Lex *lex);
+struct Token *lex_next_token(struct Lex *lex);
+char *token_type_name(const struct Token *tk);

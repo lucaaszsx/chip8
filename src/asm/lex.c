@@ -6,11 +6,11 @@
 #include "asm/lex.h"
 
 static char lex_advance(struct Lex *lex);
-static void lex_skip(struct Lex *lex, size_t n);
+static char lex_skip(struct Lex *lex, size_t n);
 static char lex_peek(struct Lex *lex);
 static char lex_lookahead(struct Lex *lex);
-static void lex_skip_trivia(struct Lex *lex);
-struct Token *lex_next_token(struct Lex *lex);
+static char lex_skip_trivia(struct Lex *lex);
+static void lex_create_tk(struct Lex *lex, struct Token **out);
 static void lex_set_tk_raw(struct Lex *lex, struct Token *tk, TokenType type, size_t start, size_t end);
 static bool lex_eof(struct Lex *lex);
 static bool is_hex_digit(char c);
@@ -30,52 +30,11 @@ void lex_init(struct Lex *lex) {
     lex->pos = 0;
 }
 
-static char lex_advance(struct Lex *lex) {
-    if (lex_eof(lex)) return '\0';
-
-    char c = lex->src[lex->pos++];
-    if (c == '\n') {
-        lex->column = 0;
-        lex->line++;
-    } else lex->column++;
-
-    return c;
-}
-
-static void lex_skip(struct Lex *lex, size_t n) {
-    lex->pos += n;
-}
-
-static char lex_peek(struct Lex *lex) {
-    return lex->src[lex->pos];
-}
-
-static char lex_lookahead(struct Lex *lex) {
-    if (lex_eof(lex)) return '\0';
-    return lex->src[lex->pos + 1];
-}
-
-static void lex_skip_trivia(struct Lex *lex) {
-    while (true) {
-        if (isspace(lex_peek(lex))) lex_advance(lex);
-        else if (lex_peek(lex) == ';') {
-            while (!lex_eof(lex) && lex_peek(lex) != '\n')
-                lex_advance(lex);
-        } else break;
-    }
-}
-
 struct Token *lex_next_token(struct Lex *lex) {
     lex_skip_trivia(lex);
 
-    struct Token *token = malloc(sizeof(struct Token));
-    if (token == NULL) {
-        fprintf(stderr, "memory allocation for the token failed");
-        exit(EXIT_FAILURE);
-    }
-
-    token->line = lex->line;
-    token->column = lex->column;
+    struct Token *token;
+    lex_create_tk(lex, &token);
 
     if (lex_peek(lex) == '\0') {
         lex_set_tk_raw(lex, token, TK_EOF, lex->pos, lex->pos);
@@ -107,6 +66,77 @@ struct Token *lex_next_token(struct Lex *lex) {
     }
 
     return token;
+}
+
+char *token_type_name(const struct Token *tk) {
+    switch (tk->type) {
+        case TK_IDENTIFIER: return "IDENTIFIER";
+        case TK_INT_HEX: return "INT_HEX";
+        case TK_INT: return "INT";
+
+        case TK_SEMICOLON: return "SEMICOLON";
+        case TK_COLON: return "COLON";
+        case TK_COMMA: return "COMMA";
+        case TK_DOT: return "DOT";
+
+        case TK_EOF: return "EOF";
+
+        default:
+            fprintf(stderr, "unexpected token type: %d", tk->type);
+            exit(EXIT_FAILURE);
+    }
+}
+
+static char lex_advance(struct Lex *lex) {
+    if (lex_eof(lex)) return '\0';
+
+    char c = lex->src[lex->pos++];
+    if (c == '\n') {
+        lex->column = 0;
+        lex->line++;
+    } else lex->column++;
+
+    return c;
+}
+
+static char lex_skip(struct Lex *lex, size_t n) {
+    char c = lex_peek(lex);
+
+    for (size_t j = 0; j < n; j++) lex_advance(lex);
+
+    return c;
+}
+
+static char lex_peek(struct Lex *lex) {
+    return lex->src[lex->pos];
+}
+
+static char lex_lookahead(struct Lex *lex) {
+    if (lex_eof(lex)) return '\0';
+    return lex->src[lex->pos + 1];
+}
+
+static char lex_skip_trivia(struct Lex *lex) {
+    while (true) {
+        if (isspace(lex_peek(lex))) lex_advance(lex);
+        else if (lex_peek(lex) == ';') {
+            while (!lex_eof(lex) && lex_peek(lex) != '\n')
+                lex_advance(lex);
+        } else break;
+    }
+}
+
+static void lex_create_tk(struct Lex *lex, struct Token **out) {
+    struct Token *tmp = malloc(sizeof(struct Token));
+    if (tmp == NULL) {
+        fprintf(stderr, "memory allocation for the token failed\n");
+        exit(EXIT_FAILURE);
+    }
+
+    tmp->line = lex->line;
+    tmp->column = lex->column;
+
+    *out = tmp;
 }
 
 static void lex_set_tk_raw(struct Lex *lex, struct Token *tk, TokenType type, size_t start, size_t end) {
@@ -163,25 +193,6 @@ static TokenType get_delimiter_type(char c) {
 
         default:
             fprintf(stderr, "unknown delimiter: %c", c);
-            exit(EXIT_FAILURE);
-    }
-}
-
-static char *token_type_name(const struct Token *tk) {
-    switch (tk->type) {
-        case TK_IDENTIFIER: return "IDENTIFIER";
-        case TK_INT_HEX: return "INT_HEX";
-        case TK_INT: return "INT";
-
-        case TK_SEMICOLON: return "SEMICOLON";
-        case TK_COLON: return "COLON";
-        case TK_COMMA: return "COMMA";
-        case TK_DOT: return "DOT";
-
-        case TK_EOF: return "EOF";
-
-        default:
-            fprintf(stderr, "unexpected token type: %d", tk->type);
             exit(EXIT_FAILURE);
     }
 }
