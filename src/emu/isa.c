@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "display.h"
-#include "memory.h"
-#include "keypad.h"
-#include "chip8.h"
-#include "isa.h"
+#include "emu/display.h"
+#include "emu/memory.h"
+#include "emu/keypad.h"
+#include "emu/chip8.h"
+#include "emu/isa.h"
 
 static uint8_t chip8_X(uint16_t opcode);
 static uint8_t chip8_Y(uint16_t opcode);

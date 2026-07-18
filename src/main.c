@@ -2,8 +2,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
-#include "emulator.h"
-#include "chip8.h"
+#include "emu/emulator.h"
+#include "emu/chip8.h"
 
 static void show_help_message(FILE *stream, char *executable);
 static int get_raw_color(SDL_Color color);

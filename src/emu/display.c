@@ -1,5 +1,5 @@
 #include <string.h>
-#include "display.h"
+#include "emu/display.h"
 
 void chip8_display_reset(struct Chip8Display *display) {
     memset(display->vram, 0, sizeof(display->vram));

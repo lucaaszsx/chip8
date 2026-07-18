@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "emulator.h"
-#include "display.h"
-#include "chip8.h"
+#include "emu/emulator.h"
+#include "emu/display.h"
+#include "emu/chip8.h"
 
 #define APP_TITLE     "Chip8 Emulator"
 

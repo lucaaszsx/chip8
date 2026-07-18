@@ -2,11 +2,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "display.h"
-#include "keypad.h"
-#include "memory.h"
-#include "chip8.h"
-#include "isa.h"
+#include "emu/display.h"
+#include "emu/keypad.h"
+#include "emu/memory.h"
+#include "emu/chip8.h"
+#include "emu/isa.h"
 
 #define OPCODE_CLS 0x00e0
 #define OPCODE_RTS 0x00ee

@@ -1,5 +1,5 @@
 #include <string.h>
-#include "keypad.h"
+#include "emu/keypad.h"
 
 void chip8_keypad_press(struct Chip8Keypad *keypad, uint8_t key) {
     if (key > KEYPAD_KEY_F) return;
