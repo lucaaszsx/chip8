@@ -33,7 +33,7 @@ static Statement *parser_stmt(struct Parser *parser) {
 
 static Statement *parser_directive_stmt(struct Parser *parser) {
     Statement *stmt;
-    parser_create_stmt(parser, STATEMENT_DIRECTIVE, &stmt);
+    parser_create_stmt(STATEMENT_DIRECTIVE, &stmt);
 
     // gets directive name
     lex_expect(parser->lex, TK_IDENTIFIER);
@@ -46,7 +46,7 @@ static Statement *parser_directive_stmt(struct Parser *parser) {
 
 static Statement *parser_label_stmt(struct Parser *parser) {
     Statement *stmt;
-    parser_create_stmt(parser, STATEMENT_LABEL, &stmt);
+    parser_create_stmt(STATEMENT_LABEL, &stmt);
 
     lex_expect(parser->lex, TK_IDENTIFIER);
     stmt->label.name = parser->lex->current->raw;
