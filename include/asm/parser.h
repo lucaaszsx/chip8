@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include "asm/lex.h"
 
+#define DIRECTIVES 9 // do not count "unknown"
+
 typedef enum {
     STATEMENT_DIRECTIVE,
     STATEMENT_LABEL,
@@ -10,6 +12,7 @@ typedef enum {
 } StatementType;
 
 typedef enum {
+    DIRECTIVE_UNKNOWN = -1,
     DIRECTIVE_ORG,
     DIRECTIVE_DB,
     DIRECTIVE_DW,
@@ -20,6 +23,11 @@ typedef enum {
     DIRECTIVE_INCBIN,
     DIRECTIVE_END
 } DirectiveType;
+
+typedef struct {
+    const char *name;
+    DirectiveType type;
+} DirectiveTable;
 
 typedef enum {
     MNEMONIC_CLS,

@@ -1,9 +1,21 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include "asm/parser.h"
 #include "asm/lex.h"
 #include "util.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
+static const DirectiveTable directive_table[DIRECTIVES] = {
+    {"org", DIRECTIVE_ORG},
+    {"db", DIRECTIVE_DB},
+    {"dw", DIRECTIVE_DW},
+    {"equ", DIRECTIVE_EQU},
+    {"ascii", DIRECTIVE_ASCII},
+    {"space", DIRECTIVE_SPACE},
+    {"include", DIRECTIVE_INCLUDE},
+    {"incbin", DIRECTIVE_INCBIN},
+    {"end", DIRECTIVE_END},
+};
 
 static Statement *parser_stmt(struct Parser *parser);
 static Statement *parser_directive_stmt(struct Parser *parser);
@@ -69,14 +81,10 @@ static Statement *parser_create_stmt(StatementType type, Statement **out) {
 static DirectiveType get_directive_type(char *raw) {
     char *directive = str_to_lower(raw);
 
-    if (strcmp(directive, "org") == 0) return DIRECTIVE_ORG;
-    else if (strcmp(directive, "db") == 0) return DIRECTIVE_DB;
-    else if (strcmp(directive, "dw") == 0) return DIRECTIVE_DW;
-    else if (strcmp(directive, "equ") == 0) return DIRECTIVE_EQU;
-    else if (strcmp(directive, "ascii") == 0) return DIRECTIVE_ASCII;
-    else if (strcmp(directive, "space") == 0) return DIRECTIVE_SPACE;
-    else if (strcmp(directive, "include") == 0) return DIRECTIVE_INCLUDE;
-    else if (strcmp(directive, "incbin") == 0) return DIRECTIVE_INCBIN;
-    else if (strcmp(directive, "end") == 0) return DIRECTIVE_END;
-    else return NULL;
+    for (size_t k = 0; k < DIRECTIVES; k++) {
+        if (directive_table[k].name == directive)
+            return directive_table[k].type;
+    }
+
+    return DIRECTIVE_UNKNOWN;
 }
