@@ -32,8 +32,8 @@ void *arena_allocate(ArenaAllocator *arena, size_t count) {
     return ptr;
 }
 
-void *arena_strdup(ArenaAllocator *arena, const char *src, size_t len) {
-    void *dst = arena_allocate(arena, len + 1);
+char *arena_strdup(ArenaAllocator *arena, const char *src, size_t len) {
+    char *dst = arena_allocate(arena, len + 1);
     if (dst == NULL) return NULL;
 
     memcpy(dst, src, len);

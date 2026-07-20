@@ -13,5 +13,5 @@ typedef struct {
 
 bool arena_init(ArenaAllocator *arena);
 void *arena_allocate(ArenaAllocator *arena, size_t count);
-void *arena_destroy(ArenaAllocator *arena);
-void *arena_strdup(ArenaAllocator *arena, const char *src, size_t len);
+char *arena_strdup(ArenaAllocator *arena, const char *src, size_t len);
+void arena_destroy(ArenaAllocator *arena);
