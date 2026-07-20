@@ -41,3 +41,7 @@ char *arena_strdup(ArenaAllocator *arena, const char *src, size_t len) {
 
     return dst;
 }
+
+void arena_destroy(ArenaAllocator *arena) {
+    free(arena->buffer);
+}
