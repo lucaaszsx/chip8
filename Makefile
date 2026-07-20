@@ -14,7 +14,7 @@ TARGET=$(BUILD)/chip8
 
 # compiler
 CC=gcc
-CC_FLAGS=-c -Wall -Wextra -I$(INCLUDE) -MMD -MP
+CC_FLAGS=-c -Wall -Wextra -Wswitch-enum -I$(INCLUDE) -MMD -MP
 LD_FLAGS=-lm
 
 # debug/release
