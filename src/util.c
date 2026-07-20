@@ -2,8 +2,8 @@
 #include "util.h"
 
 char *str_to_lower(char *str) {
-    char *final = str;
-    for (; *final; ++final) *final = tolower((unsigned char)*final);
+    char *p = str;
+    for (; *p; ++p) *p = tolower((unsigned char)*p);
 
-    return final;
+    return str;
 }
