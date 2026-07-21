@@ -7,6 +7,7 @@
 typedef enum {
     TK_UNKNOWN = -1,
     TK_IDENTIFIER,
+    TK_REGISTER,
     TK_NUMBER,
 
     // Delimiters
@@ -20,8 +21,9 @@ typedef enum {
 
 /* semantic information (yes, Lua-style) */
 typedef union {
-    uint16_t i;
-    char *s;
+    uint16_t i; /* integer value */
+    char *s; /* string value */
+    uint8_t r; /* a register (0-15) */
 } SemInfo;
 
 typedef struct {
