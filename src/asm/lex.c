@@ -34,13 +34,16 @@ Token lex_next(Lex *lex) {
     Token tk;
     tk.line = lex->line;
     tk.column = lex->column;
+    tk.seminfo.i = 0;
+    tk.seminfo.id = NULL;
+    tk.seminfo.r = 0;
 
     if (lex_peek(lex) == '\0') {
         tk.type = TK_EOS;
-        return tk;
-    }
-
-    if (tolower(lex_peek(lex)) == 'v') {
+    } else if (lex_peek(lex) == '\n') {
+        lex_skip(lex, 1);
+        tk.type = TK_NEWLINE;
+    } else if (tolower(lex_peek(lex)) == 'v') {
         lex_skip(lex, 1); // skip "v"
 
         if (!isxdigit((unsigned char)lex_peek(lex))) {
@@ -58,7 +61,7 @@ Token lex_next(Lex *lex) {
             lex_advance(lex);
         }
 
-        tk.seminfo.s = arena_strdup(lex->arena, lex->src + start, lex->pos - start);
+        tk.seminfo.id = arena_strdup(lex->arena, lex->src + start, lex->pos - start);
     } else if (lex_peek(lex) == '0' && tolower(lex_peeknext(lex)) == 'x') { // 0x
         lex_skip(lex, 2); // skip "0x"
 
@@ -111,6 +114,7 @@ const char *lex_token2str(TokenType type) {
         case TK_COLON: return "':'";
         case TK_COMMA: return "','";
         case TK_DOT: return "'.'";
+        case TK_NEWLINE: return "<newline>";
         case TK_EOS: return "<eos>";
 
         case TK_UNKNOWN:
@@ -148,12 +152,17 @@ static char lex_peeknext(Lex *lex) {
     return lex->src[lex->pos + 1];
 }
 
+static bool is_nonnewline_space(char c) {
+    return c == ' ' || c == '\t' || c == '\v' || c == '\f' || c == '\r';
+}
+
 static void lex_skip_trivia(Lex *lex) {
     while (true) {
-        if (isspace(lex_peek(lex))) lex_advance(lex);
+        if (is_nonnewline_space(lex_peek(lex))) lex_skip(lex, 1);
         else if (lex_peek(lex) == ';') { // skip single-line comments
             while (!eos(lex) && lex_peek(lex) != '\n')
-                lex_advance(lex);
+                lex_skip(lex, 1);
+            lex_skip(lex, 1); // skip \n
         } else break;
     }
 }
@@ -172,4 +181,43 @@ static bool is_delimiter(char c) {
         default:
             return false;
     }
+}
+
+int main(void) {
+    const char *src =
+        "LOOP: LD vA, 0xFF\n"
+        "  ADD v0, v1\n"
+        "  SE v2, 10\n"
+        "  JP LOOP.end\n"
+        "; comment line\n\n\n";
+
+    ArenaAllocator arena;
+    arena_init(&arena);
+
+    Lex lex;
+    lex_init(&lex, &arena, src);
+
+    Token tk;
+    do {
+        tk = lex_next(&lex);
+        printf("[%zu:%zu] %-10s", tk.line, tk.column, lex_token2str(tk.type));
+
+        switch (tk.type) {
+            case TK_REGISTER:
+                printf(" v%X", tk.seminfo.r);
+                break;
+            case TK_NUMBER:
+                printf(" %u (0x%X)", tk.seminfo.i, tk.seminfo.i);
+                break;
+            case TK_IDENTIFIER:
+                printf(" \"%s\"", tk.seminfo.id);
+                break;
+            default:
+                break;
+        }
+        printf("\n");
+    } while (tk.type != TK_EOS);
+
+    printf("OK: lexer ran to completion\n");
+    return 0;
 }

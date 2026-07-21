@@ -5,86 +5,97 @@
 #include "asm/lex.h"
 #include "util.h"
 
-static const DirectiveTable directive_table[DIRECTIVES] = {
+static const struct {
+    char *name;
+    DrtType type;
+} drt_table[NUM_DIRECTIVES] = {
     {"org", DIRECTIVE_ORG},
     {"db", DIRECTIVE_DB},
-    {"dw", DIRECTIVE_DW},
     {"equ", DIRECTIVE_EQU},
-    {"ascii", DIRECTIVE_ASCII},
-    {"space", DIRECTIVE_SPACE},
     {"include", DIRECTIVE_INCLUDE},
     {"incbin", DIRECTIVE_INCBIN},
     {"end", DIRECTIVE_END},
 };
 
-static Statement *parser_stmt(struct Parser *parser);
-static Statement *parser_directive_stmt(struct Parser *parser);
-static Statement *parser_label_stmt(struct Parser *parser);
-static Statement *parser_create_stmt(StatementType type, Statement **out);
-static DirectiveType get_directive_type(char *raw);
+static Token expect(Lex *lex, TokenType t) {
+    Token tk = lex_next(lex);
+    if (tk.type != t) {
+        fprintf(stderr, "%s expected, got %s at %zu:%zu\n", lex_token2str(t), lex_token2str(tk.type), tk.line, tk.column);
+        exit(EXIT_FAILURE);
+    }
 
-void parser_parse() {
-    
+    return tk;
 }
 
-static Statement *parser_stmt(struct Parser *parser) {
-    struct Token *tk = lex_next_token(parser->lex);
+static Stmt parser_directive_stmt(Lex *lex) {
+    Token tk = expect(lex, TK_IDENTIFIER);
+    str_to_lower(tk.seminfo.id);
 
-    switch (tk->type) {
-        case TK_DOT:
-            return parser_directive_stmt(parser);
+    Stmt stmt = {.type=STATEMENT_DIRECTIVE};
 
-        case TK_IDENTIFIER:
-            return parser_label_stmt(parser);
+    for (size_t k = 0; k < NUM_DIRECTIVES; k++) {
+        if (strcmp(drt_table[k].name, tk.seminfo.id) == 0)
+            stmt.drt.type = drt_table[k].type;
+        else if (k + 1 >= NUM_DIRECTIVES) stmt.drt.type = DIRECTIVE_UNKNOWN;
+    }
 
+    switch (stmt.drt.type) {
+        case DIRECTIVE_ORG:
+            
+            break;
+
+        case DIRECTIVE_DB:
+            break;
+
+        case DIRECTIVE_EQU:
+            break;
+
+        case DIRECTIVE_INCLUDE:
+            break;
+
+        case DIRECTIVE_INCBIN:
+            break;
+
+        case DIRECTIVE_END:
+            break;
+
+        case TK_UNKNOWN:
         default:
-            fprintf(stderr, "unexpected token at %zu:%zu: %s\n", tk->line, tk->column, tk->raw);
+            fprintf(stderr, "unknown directive %zu:%zu: %s\n", tk.line, tk.column, tk.seminfo.id);
             exit(EXIT_FAILURE);
     }
-}
-
-static Statement *parser_directive_stmt(struct Parser *parser) {
-    Statement *stmt;
-    parser_create_stmt(STATEMENT_DIRECTIVE, &stmt);
-
-    // gets directive name
-    lex_expect(parser->lex, TK_IDENTIFIER);
-    stmt->directive.type = get_directive_type(parser->lex->current->raw);
-
-    // gets directive value
-    lex_expect(parser->lex, TK_NUMBER);
-    stmt->directive.value = parser->lex->current->value;
-}
-
-static Statement *parser_label_stmt(struct Parser *parser) {
-    Statement *stmt;
-    parser_create_stmt(STATEMENT_LABEL, &stmt);
-
-    lex_expect(parser->lex, TK_IDENTIFIER);
-    stmt->label.name = parser->lex->current->raw;
 
     return stmt;
 }
 
-static Statement *parser_create_stmt(StatementType type, Statement **out) {
-    Statement *tmp = malloc(sizeof(Statement));
-    if (tmp == NULL) {
-        fprintf(stderr, "memory allocation for a statement failed\n");
-        exit(EXIT_FAILURE);
-    }
+static Stmt parser_label_stmt(Lex *lex) {
+    Stmt stmt = {.type=STATEMENT_LABEL};
 
-    tmp->type = type;
+    Token tk = lex_next(lex);
+    stmt.label.name = tk.seminfo.id;
 
-    *out = tmp;
+    return stmt;
 }
 
-static DirectiveType get_directive_type(char *raw) {
-    char *directive = str_to_lower(raw);
+static Stmt parser_stmt(Lex *lex) {
+    Token tk = lex_next(lex);
 
-    for (size_t k = 0; k < DIRECTIVES; k++) {
-        if (directive_table[k].name == directive)
-            return directive_table[k].type;
+    switch (tk.type) {
+        case TK_DOT:
+            return parser_directive_stmt(lex);
+
+        case TK_IDENTIFIER: {
+            
+            break;
+        }
+
+        case TK_UNKNOWN:
+        default:
+            fprintf(stderr, "unexpected %s at %zu:%zu\n", lex_token2str(tk.type), tk.line, tk.column);
+            exit(EXIT_FAILURE);
     }
+}
 
-    return DIRECTIVE_UNKNOWN;
+int main() {
+    return 0;
 }

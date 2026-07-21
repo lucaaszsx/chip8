@@ -15,6 +15,8 @@ typedef enum {
     TK_COMMA,
     TK_DOT,
 
+    TK_NEWLINE,
+
     // EOS - End Of Source
     TK_EOS
 } TokenType;
@@ -22,7 +24,7 @@ typedef enum {
 /* semantic information (yes, Lua-style) */
 typedef union {
     uint16_t i; /* integer value */
-    char *s; /* string value */
+    char *id; /* identifier */
     uint8_t r; /* a register (0-15) */
 } SemInfo;
 
