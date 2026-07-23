@@ -4,19 +4,6 @@
 #include "asm/lex.h"
 
 typedef enum {
-    DIRECTIVE_UNKNOWN = -1,
-    DIRECTIVE_ORG,
-    DIRECTIVE_DB,
-    DIRECTIVE_EQU,
-    DIRECTIVE_INCLUDE,
-    DIRECTIVE_INCBIN,
-    DIRECTIVE_END
-} DrtType;
-
-/* number of directives */
-#define NUM_DIRECTIVES (DIRECTIVE_END + 1) // do not count "unknown" (org..end)
-
-typedef enum {
     MNEMONIC_CLS,
     MNEMONIC_RTS,
     MNEMONIC_JMP,
@@ -48,27 +35,61 @@ typedef enum {
     MNEMONIC_LDR
 } Mnemonic;
 
+typedef enum {
+    EXPR_LABEL_REF,
+    EXPR_IMMEDIATE
+} ExprType;
+
+/* expression for immediates or values that needs to be resolved */
+typedef struct {
+    ExprType type;
+
+    union {
+        uint16_t value; /* 12-bit immediate integer value (0x000..0xfff) */
+        char *ref; /* reference to some label/constant */
+    };
+} Expr;
+
+typedef enum {
+    DIRECTIVE_UNKNOWN = -1,
+    DIRECTIVE_ORG,
+    DIRECTIVE_DB,
+    DIRECTIVE_EQU,
+    DIRECTIVE_INCLUDE,
+    DIRECTIVE_INCBIN,
+    DIRECTIVE_END
+} DrtType;
+
+/* number of directives */
+#define NUM_DIRECTIVES (DIRECTIVE_END + 1) // do not count "unknown" (org..end)
+
 /* directive statement */
 typedef struct {
     DrtType type;
 
     union {
+        Expr expr; /* org */
+
         struct {
-            uint8_t *bytes;
+            Expr *bytes;
             size_t count;
-        } data;
-        uint16_t value;
-        char *path;
+        } data; /* db */
+
+        struct {
+            char *name;
+            Expr value;
+        } equ; /* equ */
+
+        char *path; /* include, incbin */
     };
 } DrtStmt;
 
-#define NUM_INSTR_OPERANDS 3
+/* max operands supported by instructions */
+#define NUM_INSTR_OPS 3
 
 typedef enum {
     OPERAND_REG,
-    OPERAND_IMMEDIATE,
-    OPERAND_ADDR,
-    OPERAND_REF
+    OPERAND_EXPR
 } OpType;
 
 /* instruction statement */
@@ -80,10 +101,9 @@ typedef struct {
     
         union {
             uint8_t reg; /* register V0..VF (0..15) */
-            uint16_t value; /* 12-bit integer value (0x000..0xfff) */
-            char *ref; /* reference to some label */
+            Expr expr;
         };
-    } operands[NUM_INSTR_OPERANDS];
+    } operands[NUM_INSTR_OPS];
 
     size_t op_count;
 } InstrStmt;
