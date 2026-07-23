@@ -19,3 +19,4 @@ List of implementations already completed or pending for this project.
 - [ ] Add debugger
 - [ ] Add assembler
 - [ ] Fix memory leaks (remove unnecessary allocations, free when no longer in use)
+- [ ] Export WASM from the emulator/assembler and create a website to run the ROMs/code
