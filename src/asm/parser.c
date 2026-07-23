@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "asm/parser.h"
+#include "asm/arena.h"
 #include "asm/lex.h"
 #include "util.h"
 
@@ -27,22 +28,38 @@ static Token expect(Lex *lex, TokenType t) {
     return tk;
 }
 
+static Expr parser_expr(Lex *lex) {
+    Token tk = lex_next(lex);
+
+    switch (tk.type) {
+        case TK_IDENTIFIER:
+            return (Expr){.type=EXPR_LABEL_REF, .ref=tk.seminfo.id};
+
+        case TK_NUMBER:
+            return (Expr){.type=EXPR_IMMEDIATE, .value=tk.seminfo.i};
+
+        default:
+            fprintf(stderr, "expected a immediate value or a identifier, got %s\n", lex_token2str(tk.type));
+            exit(EXIT_FAILURE);
+    }
+}
+
 static Stmt parser_directive_stmt(Lex *lex) {
     Token tk = expect(lex, TK_IDENTIFIER);
     str_to_lower(tk.seminfo.id);
 
     Stmt stmt = {.type=STATEMENT_DIRECTIVE};
+    stmt.drt.type = DIRECTIVE_UNKNOWN;
 
     for (size_t k = 0; k < NUM_DIRECTIVES; k++) {
         if (strcmp(drt_table[k].name, tk.seminfo.id) == 0)
             stmt.drt.type = drt_table[k].type;
-        else if (k + 1 >= NUM_DIRECTIVES) stmt.drt.type = DIRECTIVE_UNKNOWN;
     }
 
     switch (stmt.drt.type) {
         case DIRECTIVE_ORG:
-            
-            break;
+            stmt.drt.expr = parser_expr(lex);
+            return stmt;
 
         case DIRECTIVE_DB:
             break;
