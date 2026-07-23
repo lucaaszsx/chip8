@@ -33,7 +33,7 @@ static Expr parser_expr(Lex *lex) {
 
     switch (tk.type) {
         case TK_IDENTIFIER:
-            return (Expr){.type=EXPR_LABEL_REF, .ref=tk.seminfo.id};
+            return (Expr){.type=EXPR_REF, .ref=tk.seminfo.id};
 
         case TK_NUMBER:
             return (Expr){.type=EXPR_IMMEDIATE, .value=tk.seminfo.i};

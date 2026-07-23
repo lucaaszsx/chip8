@@ -36,8 +36,8 @@ typedef enum {
 } Mnemonic;
 
 typedef enum {
-    EXPR_LABEL_REF,
-    EXPR_IMMEDIATE
+    EXPR_IMMEDIATE,
+    EXPR_REF
 } ExprType;
 
 /* expression for immediates or values that needs to be resolved */
