@@ -4,6 +4,7 @@
 #include "asm/lex.h"
 
 typedef enum {
+    MNEMONIC_UNKNOWN = -1,
     MNEMONIC_CLS,
     MNEMONIC_RTS,
     MNEMONIC_JMP,
@@ -59,9 +60,6 @@ typedef enum {
     DIRECTIVE_INCBIN,
     DIRECTIVE_END
 } DrtType;
-
-/* number of directives */
-#define NUM_DIRECTIVES (DIRECTIVE_END + 1) // do not count "unknown" (org..end)
 
 /* directive statement */
 typedef struct {
