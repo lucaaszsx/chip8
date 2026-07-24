@@ -106,7 +106,7 @@ static Expr parser_expr(Lex *lex) {
             return (Expr){.type=EXPR_IMMEDIATE, .value=tk.seminfo.i};
 
         default:
-            fprintf(stderr, "expected a immediate value or a identifier, got %s\n", lex_token2str(tk.type));
+            fprintf(stderr, "expected a immediate value or a identifier, got %s at %zu:%zu\n", lex_token2str(tk.type), tk.line, tk.column);
             exit(EXIT_FAILURE);
     }
 }
