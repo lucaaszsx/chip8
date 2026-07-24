@@ -56,8 +56,6 @@ typedef enum {
     DIRECTIVE_ORG,
     DIRECTIVE_DB,
     DIRECTIVE_EQU,
-    DIRECTIVE_INCLUDE,
-    DIRECTIVE_INCBIN,
     DIRECTIVE_END
 } DrtType;
 
@@ -77,8 +75,6 @@ typedef struct {
             char *name;
             Expr value;
         } equ; /* equ */
-
-        char *path; /* include, incbin */
     };
 } DrtStmt;
 

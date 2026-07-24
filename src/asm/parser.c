@@ -14,8 +14,6 @@ static const struct {
     {"org", DIRECTIVE_ORG},
     {"db", DIRECTIVE_DB},
     {"equ", DIRECTIVE_EQU},
-    {"include", DIRECTIVE_INCLUDE},
-    {"incbin", DIRECTIVE_INCBIN},
     {"end", DIRECTIVE_END},
 };
 
@@ -122,12 +120,8 @@ static Stmt parser_directive_stmt(Lex *lex) {
             break;
 
         case DIRECTIVE_EQU:
-            break;
-
-        case DIRECTIVE_INCLUDE:
-            break;
-
-        case DIRECTIVE_INCBIN:
+            stmt.drt.equ.name = parser_expect(lex, TK_IDENTIFIER).seminfo.id;
+            stmt.drt.equ.value = parser_expr(lex);
             break;
 
         case DIRECTIVE_END:
