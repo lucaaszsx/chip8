@@ -8,7 +8,7 @@
 #include "util.h"
 
 /* initial quantity to be allocated for reading bytes in the db directive */
-#define DB_READ_BYTES_CAPACITY 32
+#define DB_READ_BYTES_ICAP 32
 
 #define is_eol(t) (t.type == TK_NEWLINE || t.type == TK_EOS)
 
@@ -112,12 +112,12 @@ static Expr parser_expr(Lex *lex) {
 }
 
 static void parser_read_bytes(Lex *lex, uint8_t **out_bytes, size_t *out_count) {
-    size_t capacity = DB_READ_BYTES_CAPACITY;
+    size_t capacity = DB_READ_BYTES_ICAP;
     uint8_t *tmp = malloc(capacity * sizeof(uint8_t));
     size_t count = 0;
 
     for (;;) {
-        if (count == DB_READ_BYTES_CAPACITY) {
+        if (count == capacity) {
             capacity *= 2;
             tmp = realloc(tmp, capacity * sizeof(uint8_t));
         }
