@@ -185,58 +185,48 @@ static Stmt parser_label_stmt(Lex *lex, char *name) {
     };
 }
 
-static Stmt parser_stmt(Lex *lex) {
-    Token tk = lex_next(lex);
+static bool parser_stmt(Lex *lex, Stmt *out) {
+    Token tk;
+    do {
+        tk = lex_next(lex);
+    } while (tk.type == TK_NEWLINE);
+
+    if (tk.type == TK_EOS) return false;
 
     switch (tk.type) {
         case TK_DOT:
-            return parser_directive_stmt(lex);
+            *out = parser_directive_stmt(lex);
+            break;
 
         case TK_IDENTIFIER: {
             Mnemonic mnemonic;
 
-            if (lex_lookahead(lex).type == TK_COLON)
-                return parser_label_stmt(lex, tk.seminfo.id);
-            else if ((mnemonic = get_mnemonic(tk.seminfo.id)) != MNEMONIC_UNKNOWN)
-                return parser_instr_stmt(lex, mnemonic);
+            if (lex_lookahead(lex).type == TK_COLON) {
+                *out = parser_label_stmt(lex, tk.seminfo.id);
+                break;
+            } else if ((mnemonic = get_mnemonic(tk.seminfo.id)) != MNEMONIC_UNKNOWN) {
+                *out = parser_instr_stmt(lex, mnemonic);
+                break;
+            }
 
             fprintf(stderr, "unexpected identifier \"%s\" at %zu:%zu\n", tk.seminfo.id, tk.line, tk.column);
             exit(EXIT_FAILURE);
         }
 
-        case TK_UNKNOWN:
+        case TK_NEWLINE:
+            /* does nothing */
+            break;
+
         default:
             fprintf(stderr, "unexpected %s at %zu:%zu\n", lex_token2str(tk.type), tk.line, tk.column);
             exit(EXIT_FAILURE);
     }
-}
 
-int main() {
-    static const char *source =
-        ".org v0";
-    ArenaAllocator arena;
-    arena_init(&arena);
-    Lex lex;
-    lex_init(&lex, &arena, source);
-
-    Stmt stmt = parser_stmt(&lex);
-    if (stmt.type == STATEMENT_DIRECTIVE) {
-        printf("directive: %d\n", stmt.drt.type);
-
-        switch (stmt.drt.type) {
-            case DIRECTIVE_ORG:
-                switch (stmt.drt.expr.type) {
-                    case EXPR_IMMEDIATE:
-                        printf("  .ORG 0x%04X\n", stmt.drt.expr.value);
-                        break;
-                    case EXPR_REF:
-                        printf("  .ORG %s\n", stmt.drt.expr.ref);
-                        break;
-                }
-                break;
-        }
-
-        puts("\n");
+    Token next = lex_next(lex);
+    if (!is_eol(next)) {
+        fprintf(stderr, "unexpected %s at the end of the statement at %zu:%zu\n", lex_token2str(next.type), next.line, next.column);
+        exit(EXIT_FAILURE);
     }
-    return 0;
+
+    return true;
 }
