@@ -179,7 +179,10 @@ static Stmt parser_instr_stmt(Lex *lex, Mnemonic mnemonic) {
 }
 
 static Stmt parser_label_stmt(Lex *lex, char *name) {
-    return (Stmt){.type=STATEMENT_LABEL, .label=(LabelStmt){.name=name}};
+    return (Stmt){
+        .type=STATEMENT_LABEL,
+        .label=(LabelStmt){.name=name}
+    };
 }
 
 static Stmt parser_stmt(Lex *lex) {
