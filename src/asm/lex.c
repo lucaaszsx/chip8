@@ -181,7 +181,6 @@ static void lex_skip_trivia(Lex *lex) {
         else if (lex_peek(lex) == ';') { // skip single-line comments
             while (!eos(lex) && lex_peek(lex) != '\n')
                 lex_skip(lex, 1);
-            lex_skip(lex, 1); // skip \n
         } else break;
     }
 }
@@ -202,41 +201,3 @@ static bool is_delimiter(char c) {
     }
 }
 
-int main(void) {
-    const char *src =
-        "LOOP: LD vA, 0xFF\n"
-        "  ADD v0, v1\n"
-        "  SE v2, 10\n"
-        "  JP LOOP.end\n"
-        "; comment line\n\n\n";
-
-    ArenaAllocator arena;
-    arena_init(&arena);
-
-    Lex lex;
-    lex_init(&lex, &arena, src);
-
-    Token tk;
-    do {
-        tk = lex_next(&lex);
-        printf("[%zu:%zu] %-10s", tk.line, tk.column, lex_token2str(tk.type));
-
-        switch (tk.type) {
-            case TK_REGISTER:
-                printf(" v%X", tk.seminfo.r);
-                break;
-            case TK_NUMBER:
-                printf(" %u (0x%X)", tk.seminfo.i, tk.seminfo.i);
-                break;
-            case TK_IDENTIFIER:
-                printf(" \"%s\"", tk.seminfo.id);
-                break;
-            default:
-                break;
-        }
-        printf("\n");
-    } while (tk.type != TK_EOS);
-
-    printf("OK: lexer ran to completion\n");
-    return 0;
-}
