@@ -67,7 +67,7 @@ typedef struct {
         Expr expr; /* org */
 
         struct {
-            Expr *bytes;
+            uint8_t *bytes;
             size_t count;
         } data; /* db */
 
