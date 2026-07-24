@@ -1,9 +1,11 @@
 #include <ctype.h>
 #include "util.h"
 
-char *str_to_lower(char *str) {
-    char *p = str;
-    for (; *p; ++p) *p = tolower((unsigned char)*p);
+bool istrcasecmp(const char *s1, const char *s2) {
+    while (*s1 && (tolower((unsigned char)*s1) == tolower((unsigned char)*s2))) {
+        s1++;
+        s2++;
+    }
 
-    return str;
+    return tolower((unsigned char)*s1) - tolower((unsigned char)*s2);
 }

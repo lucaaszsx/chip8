@@ -1,3 +1,5 @@
 #pragma once
 
-char *str_to_lower(char *str);
+#include <stdbool.h>
+
+bool istrcasecmp(const char *s1, const char *s2);
