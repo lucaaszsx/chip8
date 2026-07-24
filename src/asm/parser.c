@@ -138,11 +138,9 @@ static void parser_read_bytes(Lex *lex, uint8_t **out_bytes, size_t *out_count) 
         parser_expect(lex, TK_COMMA); // consume TK_COMMA (,) before reading the next byte
     }
 
-    uint8_t *bytes = arena_allocate(lex->arena, count * sizeof(uint8_t));
-    memcpy(bytes, tmp, count * sizeof(uint8_t));
+    *out_bytes = arena_memcpy(lex->arena, tmp, count);
     free(tmp);
 
-    *out_bytes = bytes;
     *out_count = count;
 }
 
