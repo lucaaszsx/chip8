@@ -21,6 +21,7 @@ void lex_init(Lex *lex, ArenaAllocator *arena, const char *src) {
     lex->line = 1;
     lex->column = 1;
     lex->pos = 0;
+    lex->has_lookahead = false;
 }
 
 static int hexvalue(char c) {
@@ -28,7 +29,7 @@ static int hexvalue(char c) {
     return (tolower(c) - 'a') + 10;
 }
 
-Token lex_next(Lex *lex) {
+static Token lex_jump(Lex *lex) {
     lex_skip_trivia(lex);
 
     Token tk;
@@ -104,6 +105,24 @@ Token lex_next(Lex *lex) {
     }
 
     return tk;
+}
+
+Token lex_next(Lex *lex) {
+    if (lex->has_lookahead) {
+        lex->has_lookahead = false;
+        return lex->lookahead;
+    }
+
+    return lex_jump(lex);
+}
+
+Token lex_lookahead(Lex *lex) {
+    if (!lex->has_lookahead) {
+        lex->has_lookahead = true;
+        lex->lookahead = lex_jump(lex);
+    }
+
+    return lex->lookahead;
 }
 
 const char *lex_token2str(TokenType type) {

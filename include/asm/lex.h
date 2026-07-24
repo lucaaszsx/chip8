@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include "asm/arena.h"
@@ -9,6 +10,8 @@ typedef enum {
     TK_IDENTIFIER,
     TK_REGISTER,
     TK_NUMBER,
+    TK_LABEL,
+    TK_DIRECTIVE,
 
     // Delimiters
     TK_COLON,
@@ -43,9 +46,13 @@ typedef struct {
     size_t column; /* current lexer line */
     size_t pos; /* current lexer position at src (<src_len) */
 
+    Token lookahead;
+    bool has_lookahead;
+
     ArenaAllocator *arena;
 } Lex;
 
 void lex_init(Lex *lex, ArenaAllocator *arena, const char *src);
 Token lex_next(Lex *lex);
+Token lex_lookahead(Lex *lex);
 const char *lex_token2str(TokenType type);
