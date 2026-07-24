@@ -10,8 +10,6 @@ typedef enum {
     TK_IDENTIFIER,
     TK_REGISTER,
     TK_NUMBER,
-    TK_LABEL,
-    TK_DIRECTIVE,
 
     // Delimiters
     TK_COLON,
