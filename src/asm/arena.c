@@ -42,6 +42,15 @@ char *arena_strdup(ArenaAllocator *arena, const char *src, size_t len) {
     return dst;
 }
 
+uint8_t *arena_memcpy(ArenaAllocator *arena, const uint8_t *bytes, size_t count) {
+    uint8_t *dst = arena_allocate(arena, count);
+    if (dst == NULL) return NULL;
+
+    memcpy(dst, bytes, count);
+
+    return dst;
+}
+
 void arena_destroy(ArenaAllocator *arena) {
     free(arena->buffer);
 }
