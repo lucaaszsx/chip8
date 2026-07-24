@@ -132,13 +132,10 @@ static void parser_read_bytes(Lex *lex, uint8_t **out_bytes, size_t *out_count) 
 
         tmp[count++] = (uint8_t)value;
 
-        Token next = lex_next(lex);
+        Token next = lex_lookahead(lex);
         if (is_eol(next)) break;
-        if (next.type != TK_COMMA) {
-            fprintf(stderr, "expected ',' %s at %zu%zu\n", lex_token2str(next.type), next.line, next.column);
-            free(tmp);
-            exit(EXIT_FAILURE);
-        }
+
+        parser_expect(lex, TK_COMMA); // consume TK_COMMA (,) before reading the next byte
     }
 
     uint8_t *bytes = arena_allocate(lex->arena, count * sizeof(uint8_t));
