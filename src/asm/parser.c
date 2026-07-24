@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -5,6 +6,11 @@
 #include "asm/arena.h"
 #include "asm/lex.h"
 #include "util.h"
+
+/* initial quantity to be allocated for reading bytes in the db directive */
+#define DB_READ_BYTES_CAPACITY 32
+
+#define is_eol(t) (t.type == TK_NEWLINE || t.type == TK_EOS)
 
 /* Directives table */
 static const struct {
@@ -105,18 +111,55 @@ static Expr parser_expr(Lex *lex) {
     }
 }
 
-static Stmt parser_directive_stmt(Lex *lex) {
-    lex_next(lex); // consume "." (TK_DOT)
+static void parser_read_bytes(Lex *lex, uint8_t **out_bytes, size_t *out_count) {
+    size_t capacity = DB_READ_BYTES_CAPACITY;
+    uint8_t *tmp = malloc(capacity * sizeof(uint8_t));
+    size_t count = 0;
 
+    for (;;) {
+        if (count == DB_READ_BYTES_CAPACITY) {
+            capacity *= 2;
+            tmp = realloc(tmp, capacity * sizeof(uint8_t));
+        }
+
+        Token tk = parser_expect(lex, TK_NUMBER);
+        uint16_t value = tk.seminfo.i;
+
+        if (value > UINT8_MAX) {
+            fprintf(stderr, "invalid byte at %zu:%zu\n", tk.line, tk.column);
+            exit(EXIT_FAILURE);
+        }
+
+        tmp[count++] = (uint8_t)value;
+
+        Token next = lex_next(lex);
+        if (is_eol(next)) break;
+        if (next.type != TK_COMMA) {
+            fprintf(stderr, "expected ',' %s at %zu%zu\n", lex_token2str(next.type), next.line, next.column);
+            free(tmp);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    uint8_t *bytes = arena_allocate(lex->arena, count * sizeof(uint8_t));
+    memcpy(bytes, tmp, count * sizeof(uint8_t));
+    free(tmp);
+
+    *out_bytes = bytes;
+    *out_count = count;
+}
+
+static Stmt parser_directive_stmt(Lex *lex) {
     Stmt stmt = {.type=STATEMENT_DIRECTIVE};
     Token tk = parser_expect(lex, TK_IDENTIFIER);
 
     switch ((stmt.drt.type = get_drt_type(tk.seminfo.id))) {
         case DIRECTIVE_ORG:
             stmt.drt.expr = parser_expr(lex);
-            return stmt;
+            break;
 
         case DIRECTIVE_DB:
+            parser_read_bytes(lex, &stmt.drt.data.bytes, &stmt.drt.data.count);
             break;
 
         case DIRECTIVE_EQU:
@@ -125,6 +168,7 @@ static Stmt parser_directive_stmt(Lex *lex) {
             break;
 
         case DIRECTIVE_END:
+            /* does nothing */
             break;
 
         default:
@@ -135,30 +179,31 @@ static Stmt parser_directive_stmt(Lex *lex) {
     return stmt;
 }
 
-static Stmt parser_instr_stmt(Lex *lex, Mnemonic m) {
-    
+static Stmt parser_instr_stmt(Lex *lex, Mnemonic mnemonic) {
+
 }
 
-static Stmt parser_label_stmt(Lex *lex) {
-    Stmt stmt = {.type=STATEMENT_LABEL};
-
-    Token tk = lex_next(lex);
-    stmt.label.name = tk.seminfo.id;
-
-    return stmt;
+static Stmt parser_label_stmt(Lex *lex, char *name) {
+    return (Stmt){.type=STATEMENT_LABEL, .label=(LabelStmt){.name=name}};
 }
 
 static Stmt parser_stmt(Lex *lex) {
-    Token tk = lex_lookahead(lex);
+    Token tk = lex_next(lex);
 
     switch (tk.type) {
         case TK_DOT:
             return parser_directive_stmt(lex);
 
         case TK_IDENTIFIER: {
-            if ()
-            if (next.type == TK_COLON)
-                return parser_label_stmt(lex);
+            Mnemonic mnemonic;
+
+            if (lex_lookahead(lex).type == TK_COLON)
+                return parser_label_stmt(lex, tk.seminfo.id);
+            else if ((mnemonic = get_mnemonic(tk.seminfo.id)) != MNEMONIC_UNKNOWN)
+                return parser_instr_stmt(lex, mnemonic);
+
+            fprintf(stderr, "unexpected identifier \"%s\" at %zu:%zu\n", tk.seminfo.id, tk.line, tk.column);
+            exit(EXIT_FAILURE);
         }
 
         case TK_UNKNOWN:
