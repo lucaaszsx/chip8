@@ -45,7 +45,7 @@ Labels are indicators for the assembler signaling that the first memory address 
 
 #### Directives
 
-Directives, also called pseudo-instructions, are responsible for changing the default behavior of the assembler. Below is a table showing the directives along their syntax and description.
+Directives are responsible for changing the default behavior of the assembler. Below is a table showing the directives along their syntax and description.
 
 | Directive | Syntax                   | Description                                                                      | Note                                     |
 | --------- | ------------------------ | -------------------------------------------------------------------------------- | ---------------------------------------- |
