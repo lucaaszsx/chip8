@@ -84,7 +84,7 @@ static const MnemonicEntry mnemonic_table[] = {
 /* number of mnemonics */
 #define NUM_MNEMONICS (sizeof(mnemonic_table) / sizeof(mnemonic_table[0]))
 
-static size_t get_mnemonic_idx(char *s) {
+static int get_mnemonic_idx(char *s) {
     for (size_t k = 0; k < NUM_MNEMONICS; k++) {
         if (istrcasecmp(mnemonic_table[k].name, s) == 0)
             return k;
@@ -268,7 +268,7 @@ static bool parser_stmt(Lex *lex, Stmt *out) {
             break;
 
         case TK_IDENTIFIER: {
-            size_t mnemonic_idx;
+            int mnemonic_idx;
 
             if (lex_lookahead(lex).type == TK_COLON) {
                 *out = (Stmt){
