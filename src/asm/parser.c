@@ -271,6 +271,7 @@ static bool parser_stmt(Lex *lex, Stmt *out) {
             int mnemonic_idx;
 
             if (lex_lookahead(lex).type == TK_COLON) {
+                lex_next(lex); // consume TK_COLON (:)
                 *out = (Stmt){
                     .type=STATEMENT_LABEL,
                     .label=(LabelStmt){.name=tk.seminfo.id}
