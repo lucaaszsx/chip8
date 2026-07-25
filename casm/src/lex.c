@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
-#include "asm/lex.h"
-#include "asm/arena.h"
+#include "lex.h"
+#include "arena.h"
 
 static char lex_advance(Lex *lex);
 static char lex_skip(Lex *lex, size_t n);

@@ -1,6 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
-#include "asm/arena.h"
+#include "arena.h"
 
 bool arena_init(ArenaAllocator *arena) {
     arena->buffer = malloc(ARENA_DEFAULT_SIZE);

@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "asm/arena.h"
+#include "arena.h"
 
 typedef enum {
     TK_UNKNOWN = -1,

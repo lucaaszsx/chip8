@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "asm/lex.h"
+#include "lex.h"
 
 typedef enum {
     MNEMONIC_UNKNOWN = -1,

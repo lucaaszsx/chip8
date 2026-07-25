@@ -1,46 +1,23 @@
-PROJ_NAME=chip8
-
 # folders
-SRC=./src
-INCLUDE=./include
 BUILD=./build
-BUILD_OBJ=$(BUILD)/obj
+BIN=./bin
 
-# files
-C_SRC=$(shell find $(SRC) -name "*.c")
-OBJ=$(patsubst $(SRC)/%.c,$(BUILD_OBJ)/%.o,$(C_SRC))
-DEP=$(OBJ:.o=.d)
-TARGET=$(BUILD)/chip8
+all: debug
 
-# compiler
-CC=gcc
-CC_FLAGS=-c -Wall -Wextra -Wswitch-enum -I$(INCLUDE) -MMD -MP
-LD_FLAGS=-lm
+debug:
+	$(MAKE) BUILD_TYPE=debug cemu casm
 
-# debug/release
-BUILD_TYPE ?= debug
-ifeq ($(BUILD_TYPE),debug)
-	CC_FLAGS += -g -O0
-else
-	CC_FLAGS += -O2
-endif
+release:
+	$(MAKE) BUILD_TYPE=release cemu casm
 
-# SDL flags
-SDL_CFLAGS=$(shell pkg-config --cflags sdl3)
-SDL_LIBS=$(shell pkg-config --libs sdl3)
+cemu:
+	$(MAKE) -C cemu BUILD_TYPE=$(BUILD_TYPE)
 
-all: $(TARGET)
-
-$(TARGET): $(OBJ)
-	$(CC) $^ $(SDL_LIBS) $(LD_FLAGS) -o $@
-
-$(BUILD_OBJ)/%.o: $(SRC)/%.c
-	@ mkdir -p $(dir $@)
-	$(CC) $< $(CC_FLAGS) $(SDL_CFLAGS) -o $@
-
--include $(DEP)
+casm:
+	$(MAKE) -C casm BUILD_TYPE=$(BUILD_TYPE)
 
 clean:
-	@ rm -rf $(BUILD)
+	rm -rf $(BUILD)
+	rm -rf $(BIN)
 
-.PHONY: all clean
+.PHONY: all debug release cemu casm

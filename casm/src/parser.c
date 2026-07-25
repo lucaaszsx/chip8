@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "asm/parser.h"
-#include "asm/arena.h"
-#include "asm/lex.h"
+#include "parser.h"
+#include "arena.h"
+#include "lex.h"
 #include "util.h"
 
 /* initial quantity to be allocated for reading bytes in the db directive */
