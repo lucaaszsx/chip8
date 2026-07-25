@@ -44,8 +44,4 @@ $(BUILD_OBJ)/%.o: $(SRC)/%.c
 
 -include $(DEP)
 
-clean:
-	@ rm -rf $(BUILD)
-	@ rm -f $(TARGET)
-
-.PHONY: all clean
+.PHONY: all
