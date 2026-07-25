@@ -47,9 +47,9 @@ typedef struct {
     Mnemonic mnemonic;
     OpKind ops[NUM_INSTR_OPS];
     size_t expected_ops;
-} MnemonicSig;
+} MnemonicEntry;
 
-static const MnemonicSig mnemonic_table[] = {
+static const MnemonicEntry mnemonic_table[] = {
     {"cls", MNEMONIC_CLS, {0}, 0},
     {"rts", MNEMONIC_RTS, {0}, 0},
     {"jmp", MNEMONIC_JMP, {OPKIND_ADDR}, 1},
@@ -194,10 +194,10 @@ static Stmt parser_directive_stmt(Lex *lex) {
 }
 
 static Stmt parser_instr_stmt(Lex *lex, size_t idx) {
-    MnemonicSig sig = mnemonic_table[idx];
+    MnemonicEntry entry = mnemonic_table[idx];
 
     Stmt stmt = {.type=STATEMENT_INSTR};
-    stmt.instr.mnemonic = sig.mnemonic;
+    stmt.instr.mnemonic = entry.mnemonic;
     stmt.instr.op_count = 0;
 
     Token next = lex_lookahead(lex);
@@ -238,15 +238,15 @@ static Stmt parser_instr_stmt(Lex *lex, size_t idx) {
     }
 
     check_count:
-    if (stmt.instr.op_count != sig.expected_ops) {
-        fprintf(stderr, "%s expects %zu operands, got %zu at %zu:%zu\n", sig.name, sig.expected_ops, stmt.instr.op_count, next.line, next.column);
+    if (stmt.instr.op_count != entry.expected_ops) {
+        fprintf(stderr, "%s expects %zu operands, got %zu at %zu:%zu\n", entry.name, entry.expected_ops, stmt.instr.op_count, next.line, next.column);
         exit(EXIT_FAILURE);
     }
 
     for (size_t k = 0; k < stmt.instr.op_count; k++) {
         OpType got = stmt.instr.operands[k].type;
-        if (!opkind_v(sig.ops[k], got)) {
-            fprintf(stderr, "operand %zu of %s has wrong kind\n", k + 1, sig.name);
+        if (!opkind_v(entry.ops[k], got)) {
+            fprintf(stderr, "operand %zu of %s has wrong kind\n", k + 1, entry.name);
             exit(EXIT_FAILURE);
         }
     }
