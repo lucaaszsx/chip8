@@ -254,7 +254,7 @@ static Stmt parser_instr_stmt(Lex *lex, size_t idx) {
     return stmt;
 }
 
-static bool parser_stmt(Lex *lex, Stmt *out) {
+bool parser_stmt(Lex *lex, Stmt *out) {
     Token tk;
     do {
         tk = lex_next(lex);

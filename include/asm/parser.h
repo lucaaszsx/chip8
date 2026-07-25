@@ -123,3 +123,4 @@ typedef struct {
     };
 } Stmt;
 
+bool parser_stmt(Lex *lex, Stmt *out);
