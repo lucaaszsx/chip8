@@ -1,4 +1,4 @@
-# CASM8 - CHIP-8 Assembler
+# CASM - CHIP-8 Assembler
 
 ## Table of Contents
 
@@ -15,11 +15,11 @@
 
 ### Assembler Overview
 
-CASM8 is a simple assembler designed to convert assembly code into executable programs for interpreters and emulators compatible with the CHIP-8 VM. The language was designed to be small and simple while still being capable of providing all the necessary features for developing programs for CHIP-8.
+CASM is a simple assembler designed to convert assembly code into executable programs for interpreters and emulators compatible with the CHIP-8 VM. The language was designed to be small and simple while still being capable of providing all the necessary features for developing programs for CHIP-8.
 
 ### Assembly
 
-The information provided below details specifications of the way the Assembly works that CASM8 is capable of reading and translating into machine code, detailing syntax, labels, instructions and directives (pseudo-instructions).
+The information provided below details specifications of the way the Assembly works that CASM is capable of reading and translating into machine code, detailing syntax, labels, instructions and directives (pseudo-instructions).
 
 #### General Syntax Rules
 
@@ -62,7 +62,7 @@ Directives are responsible for changing the default behavior of the assembler. B
 
 #### Instructions
 
-Assembly instructions are those that will be converted into executable machine code. CASM8 supports a total of 29 instructions, which are converted into operations corresponding to the CHIP-8 ISA. Each instruction has its own operands. When multiple operands are required for a single instruction, the values must be separated by a comma. These instructions do not necessarily need to be placed inside a label, unless a part of the code needs to reference them.
+Assembly instructions are those that will be converted into executable machine code. CASM supports a total of 29 instructions, which are converted into operations corresponding to the CHIP-8 ISA. Each instruction has its own operands. When multiple operands are required for a single instruction, the values must be separated by a comma. These instructions do not necessarily need to be placed inside a label, unless a part of the code needs to reference them.
 
 ##### Data Movement Instructions
 
