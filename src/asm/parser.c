@@ -39,8 +39,7 @@ typedef enum {
     OPKIND_REG = 1 << 0,
     OPKIND_ADDR = 1 << 1,
     OPKIND_BYTE = 1 << 2,
-    OPKIND_NIBBLE = 1 << 3,
-    OPKIND_REG_OR_BYTE = 1 << 4
+    OPKIND_NIBBLE = 1 << 3
 } OpKind;
 
 typedef struct {
@@ -55,11 +54,11 @@ static const MnemonicSig mnemonic_table[] = {
     {"rts", MNEMONIC_RTS, {0}, 0},
     {"jmp", MNEMONIC_JMP, {OPKIND_ADDR}, 1},
     {"jsr", MNEMONIC_JSR, {OPKIND_ADDR}, 1},
-    {"skeq", MNEMONIC_SKEQ, {OPKIND_REG, OPKIND_REG_OR_BYTE}, 2},
-    {"skne", MNEMONIC_SKNE, {OPKIND_REG, OPKIND_REG_OR_BYTE}, 2},
-    {"mov", MNEMONIC_MOV, {OPKIND_REG, OPKIND_REG_OR_BYTE}, 2},
-    {"add", MNEMONIC_ADD, {OPKIND_REG, OPKIND_REG_OR_BYTE}, 2},
-    {"sub", MNEMONIC_SUB, {OPKIND_REG, OPKIND_REG_OR_BYTE}, 2},
+    {"skeq", MNEMONIC_SKEQ, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
+    {"skne", MNEMONIC_SKNE, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
+    {"mov", MNEMONIC_MOV, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
+    {"add", MNEMONIC_ADD, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
+    {"sub", MNEMONIC_SUB, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
     {"or", MNEMONIC_OR, {OPKIND_REG, OPKIND_REG}, 2},
     {"and", MNEMONIC_AND, {OPKIND_REG, OPKIND_REG}, 2},
     {"xor", MNEMONIC_XOR, {OPKIND_REG, OPKIND_REG}, 2},
@@ -94,21 +93,12 @@ static size_t get_mnemonic_idx(char *s) {
 }
 
 static bool opkind_v(OpKind kind, OpType type) {
-    switch (kind) {
-        case OPKIND_REG:
-            return type == OPERAND_REG;
+    if ((kind & OPKIND_REG) && type == OPERAND_REG)
+        return true;
+    if ((kind & (OPKIND_ADDR | OPKIND_BYTE | OPKIND_NIBBLE)) && type == OPERAND_VALUE)
+        return true;
 
-        case OPKIND_ADDR:
-        case OPKIND_BYTE:
-        case OPKIND_NIBBLE:
-            return type == OPERAND_VALUE;
-
-        case OPKIND_REG_OR_BYTE:
-            return type == OPERAND_REG || type == OPERAND_VALUE;
-
-        default:
-            return false;
-    }
+    return false;
 }
 
 //
