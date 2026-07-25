@@ -37,19 +37,19 @@ typedef enum {
 } Mnemonic;
 
 typedef enum {
-    EXPR_IMMEDIATE,
-    EXPR_REF
-} ExprType;
+    VALUE_IMMEDIATE,
+    VALUE_REF
+} ValueType;
 
-/* expression for immediates or values that needs to be resolved */
+/* type for immediate values and references that needs to be resolved */
 typedef struct {
-    ExprType type;
+    ValueType type;
 
     union {
         uint16_t value; /* 12-bit immediate integer value (0x000..0xfff) */
         char *ref; /* reference to some label/constant */
     };
-} Expr;
+} Value;
 
 typedef enum {
     DIRECTIVE_UNKNOWN = -1,
@@ -64,16 +64,16 @@ typedef struct {
     DrtType type;
 
     union {
-        Expr expr; /* org */
+        Value org; /* org */
 
         struct {
             uint8_t *bytes;
             size_t count;
-        } data; /* db */
+        } db; /* db */
 
         struct {
             char *name;
-            Expr value;
+            Value value;
         } equ; /* equ */
     };
 } DrtStmt;
@@ -83,7 +83,7 @@ typedef struct {
 
 typedef enum {
     OPERAND_REG,
-    OPERAND_EXPR
+    OPERAND_VALUE
 } OpType;
 
 /* instruction statement */
@@ -95,7 +95,7 @@ typedef struct {
     
         union {
             uint8_t reg; /* register V0..VF (0..15) */
-            Expr expr;
+            Value value;
         };
     } operands[NUM_INSTR_OPS];
 

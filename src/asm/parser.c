@@ -35,50 +35,80 @@ static DrtType get_drt_type(char *s) {
 }
 
 /* Mnemonics table */
-static const struct {
+typedef enum {
+    OPKIND_REG = 1 << 0,
+    OPKIND_ADDR = 1 << 1,
+    OPKIND_BYTE = 1 << 2,
+    OPKIND_NIBBLE = 1 << 3,
+    OPKIND_REG_OR_BYTE = 1 << 4
+} OpKind;
+
+typedef struct {
     char *name;
     Mnemonic mnemonic;
-} mnemonic_table[] = {
-    {"cls", MNEMONIC_CLS},
-    {"rts", MNEMONIC_RTS},
-    {"jmp", MNEMONIC_JMP},
-    {"jsr", MNEMONIC_JSR},
-    {"skeq", MNEMONIC_SKEQ},
-    {"skne", MNEMONIC_SKNE},
-    {"mov", MNEMONIC_MOV},
-    {"add", MNEMONIC_ADD},
-    {"sub", MNEMONIC_SUB},
-    {"or", MNEMONIC_OR},
-    {"and", MNEMONIC_AND},
-    {"xor", MNEMONIC_XOR},
-    {"shr", MNEMONIC_SHR},
-    {"shl", MNEMONIC_SHL},
-    {"mvi", MNEMONIC_MVI},
-    {"jmi", MNEMONIC_JMI},
-    {"rand", MNEMONIC_RAND},
-    {"draw", MNEMONIC_DRAW},
-    {"skpr", MNEMONIC_SKPR},
-    {"skup", MNEMONIC_SKUP},
-    {"gdelay", MNEMONIC_GDELAY},
-    {"sdelay", MNEMONIC_SDELAY},
-    {"ssound", MNEMONIC_SSOUND},
-    {"adi", MNEMONIC_ADI},
-    {"key", MNEMONIC_KEY},
-    {"font", MNEMONIC_FONT},
-    {"bcd", MNEMONIC_BCD},
-    {"str", MNEMONIC_STR},
-    {"ldr", MNEMONIC_LDR}
+    OpKind ops[NUM_INSTR_OPS];
+    size_t expected_ops;
+} MnemonicSig;
+
+static const MnemonicSig mnemonic_table[] = {
+    {"cls", MNEMONIC_CLS, {0}, 0},
+    {"rts", MNEMONIC_RTS, {0}, 0},
+    {"jmp", MNEMONIC_JMP, {OPKIND_ADDR}, 1},
+    {"jsr", MNEMONIC_JSR, {OPKIND_ADDR}, 1},
+    {"skeq", MNEMONIC_SKEQ, {OPKIND_REG, OPKIND_REG_OR_BYTE}, 2},
+    {"skne", MNEMONIC_SKNE, {OPKIND_REG, OPKIND_REG_OR_BYTE}, 2},
+    {"mov", MNEMONIC_MOV, {OPKIND_REG, OPKIND_REG_OR_BYTE}, 2},
+    {"add", MNEMONIC_ADD, {OPKIND_REG, OPKIND_REG_OR_BYTE}, 2},
+    {"sub", MNEMONIC_SUB, {OPKIND_REG, OPKIND_REG_OR_BYTE}, 2},
+    {"or", MNEMONIC_OR, {OPKIND_REG, OPKIND_REG}, 2},
+    {"and", MNEMONIC_AND, {OPKIND_REG, OPKIND_REG}, 2},
+    {"xor", MNEMONIC_XOR, {OPKIND_REG, OPKIND_REG}, 2},
+    {"shr", MNEMONIC_SHR, {OPKIND_REG}, 1},
+    {"shl", MNEMONIC_SHL, {OPKIND_REG}, 1},
+    {"mvi", MNEMONIC_MVI, {OPKIND_ADDR}, 1},
+    {"jmi", MNEMONIC_JMI, {OPKIND_REG, OPKIND_BYTE}, 2},
+    {"rand", MNEMONIC_RAND, {OPKIND_REG, OPKIND_BYTE}, 2},
+    {"draw", MNEMONIC_DRAW, {OPKIND_REG, OPKIND_REG, OPKIND_NIBBLE}, 3},
+    {"skpr", MNEMONIC_SKPR, {OPKIND_REG}, 1},
+    {"skup", MNEMONIC_SKUP, {OPKIND_REG}, 1},
+    {"gdelay", MNEMONIC_GDELAY, {OPKIND_REG}, 1},
+    {"sdelay", MNEMONIC_SDELAY, {OPKIND_REG}, 1},
+    {"ssound", MNEMONIC_SSOUND, {OPKIND_REG}, 1},
+    {"adi", MNEMONIC_ADI, {OPKIND_REG}, 1},
+    {"key", MNEMONIC_KEY, {OPKIND_REG}, 1},
+    {"font", MNEMONIC_FONT, {OPKIND_REG}, 1},
+    {"bcd", MNEMONIC_BCD, {OPKIND_REG}, 1},
+    {"str", MNEMONIC_STR, {OPKIND_REG}, 1},
+    {"ldr", MNEMONIC_LDR, {OPKIND_REG}, 1}
 };
 
 /* number of mnemonics */
 #define NUM_MNEMONICS (sizeof(mnemonic_table) / sizeof(mnemonic_table[0]))
 
-static Mnemonic get_mnemonic(char *s) {
+static size_t get_mnemonic_idx(char *s) {
     for (size_t k = 0; k < NUM_MNEMONICS; k++) {
         if (istrcasecmp(mnemonic_table[k].name, s) == 0)
-            return mnemonic_table[k].mnemonic;
+            return k;
     }
-    return MNEMONIC_UNKNOWN;
+    return -1;
+}
+
+static bool opkind_v(OpKind kind, OpType type) {
+    switch (kind) {
+        case OPKIND_REG:
+            return type == OPERAND_REG;
+
+        case OPKIND_ADDR:
+        case OPKIND_BYTE:
+        case OPKIND_NIBBLE:
+            return type == OPERAND_VALUE;
+
+        case OPKIND_REG_OR_BYTE:
+            return type == OPERAND_REG || type == OPERAND_VALUE;
+
+        default:
+            return false;
+    }
 }
 
 //
@@ -91,19 +121,18 @@ static Token parser_expect(Lex *lex, TokenType t) {
         fprintf(stderr, "%s expected, got %s at %zu:%zu\n", lex_token2str(t), lex_token2str(tk.type), tk.line, tk.column);
         exit(EXIT_FAILURE);
     }
-
     return tk;
 }
 
-static Expr parser_expr(Lex *lex) {
+static Value parser_value(Lex *lex) {
     Token tk = lex_next(lex);
 
     switch (tk.type) {
         case TK_IDENTIFIER:
-            return (Expr){.type=EXPR_REF, .ref=tk.seminfo.id};
+            return (Value){.type=VALUE_REF, .ref=tk.seminfo.id};
 
         case TK_NUMBER:
-            return (Expr){.type=EXPR_IMMEDIATE, .value=tk.seminfo.i};
+            return (Value){.type=VALUE_IMMEDIATE, .value=tk.seminfo.i};
 
         default:
             fprintf(stderr, "expected a immediate value or a identifier, got %s at %zu:%zu\n", lex_token2str(tk.type), tk.line, tk.column);
@@ -150,16 +179,16 @@ static Stmt parser_directive_stmt(Lex *lex) {
 
     switch ((stmt.drt.type = get_drt_type(tk.seminfo.id))) {
         case DIRECTIVE_ORG:
-            stmt.drt.expr = parser_expr(lex);
+            stmt.drt.org = parser_value(lex);
             break;
 
         case DIRECTIVE_DB:
-            parser_read_bytes(lex, &stmt.drt.data.bytes, &stmt.drt.data.count);
+            parser_read_bytes(lex, &stmt.drt.db.bytes, &stmt.drt.db.count);
             break;
 
         case DIRECTIVE_EQU:
             stmt.drt.equ.name = parser_expect(lex, TK_IDENTIFIER).seminfo.id;
-            stmt.drt.equ.value = parser_expr(lex);
+            stmt.drt.equ.value = parser_value(lex);
             break;
 
         case DIRECTIVE_END:
@@ -174,15 +203,65 @@ static Stmt parser_directive_stmt(Lex *lex) {
     return stmt;
 }
 
-static Stmt parser_instr_stmt(Lex *lex, Mnemonic mnemonic) {
+static Stmt parser_instr_stmt(Lex *lex, size_t idx) {
+    MnemonicSig sig = mnemonic_table[idx];
 
-}
+    Stmt stmt = {.type=STATEMENT_INSTR};
+    stmt.instr.mnemonic = sig.mnemonic;
+    stmt.instr.op_count = 0;
 
-static Stmt parser_label_stmt(Lex *lex, char *name) {
-    return (Stmt){
-        .type=STATEMENT_LABEL,
-        .label=(LabelStmt){.name=name}
-    };
+    Token next = lex_lookahead(lex);
+    if (is_eol(next)) goto check_count;
+
+    for (;;) {
+        Token tk = lex_next(lex);
+
+        if (stmt.instr.op_count == NUM_INSTR_OPS) {
+            fprintf(stderr, "too many operands at %zu:%zu\n", tk.line, tk.column);
+            exit(EXIT_FAILURE);
+        }
+
+        OpType type;
+        if (tk.type == TK_REGISTER)
+            type = OPERAND_REG;
+        else if (tk.type == TK_IDENTIFIER || tk.type == TK_NUMBER)
+            type = OPERAND_VALUE;
+        else {
+            fprintf(stderr, "unexpected %s in operand list at %zu:%zu\n", lex_token2str(tk.type), tk.line, tk.column);
+            exit(EXIT_FAILURE);
+        }
+
+        stmt.instr.operands[stmt.instr.op_count].type = type;
+        if (type == OPERAND_REG)
+            stmt.instr.operands[stmt.instr.op_count].reg = tk.seminfo.r;
+        else if (tk.type == TK_IDENTIFIER)
+            stmt.instr.operands[stmt.instr.op_count].value = (Value){.type=VALUE_REF, .ref=tk.seminfo.id};
+        else
+            stmt.instr.operands[stmt.instr.op_count].value = (Value){.type=VALUE_IMMEDIATE, .value=tk.seminfo.i};
+
+        stmt.instr.op_count++;
+
+        next = lex_lookahead(lex);
+        if (is_eol(next)) break;
+
+        parser_expect(lex, TK_COMMA);
+    }
+
+    check_count:
+    if (stmt.instr.op_count != sig.expected_ops) {
+        fprintf(stderr, "%s expects %zu operands, got %zu at %zu:%zu\n", sig.name, sig.expected_ops, stmt.instr.op_count, next.line, next.column);
+        exit(EXIT_FAILURE);
+    }
+
+    for (size_t k = 0; k < stmt.instr.op_count; k++) {
+        OpType got = stmt.instr.operands[k].type;
+        if (!opkind_v(sig.ops[k], got)) {
+            fprintf(stderr, "operand %zu of %s has wrong kind\n", k + 1, sig.name);
+            exit(EXIT_FAILURE);
+        }
+    }
+    
+    return stmt;
 }
 
 static bool parser_stmt(Lex *lex, Stmt *out) {
@@ -199,13 +278,16 @@ static bool parser_stmt(Lex *lex, Stmt *out) {
             break;
 
         case TK_IDENTIFIER: {
-            Mnemonic mnemonic;
+            size_t mnemonic_idx;
 
             if (lex_lookahead(lex).type == TK_COLON) {
-                *out = parser_label_stmt(lex, tk.seminfo.id);
+                *out = (Stmt){
+                    .type=STATEMENT_LABEL,
+                    .label=(LabelStmt){.name=tk.seminfo.id}
+                };
                 break;
-            } else if ((mnemonic = get_mnemonic(tk.seminfo.id)) != MNEMONIC_UNKNOWN) {
-                *out = parser_instr_stmt(lex, mnemonic);
+            } else if ((mnemonic_idx = get_mnemonic_idx(tk.seminfo.id)) > -1) {
+                *out = parser_instr_stmt(lex, mnemonic_idx);
                 break;
             }
 
