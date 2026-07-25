@@ -26,9 +26,10 @@ The information provided below details specifications of the way the Assembly wo
 - Every statement in the assembly language must be separated by line breaks, and a label, instruction or a directive is expected to fill the one line of text.
 - A semicolon (`;`) indicates a comment, and a comment ends when a line break is found.
 - Spaces and multiple lines do not affect the final output and can be used for indentation and code organization.
+- An instruction does not necessarily need to be inside a label.
+- Instruction mnemonics and directive names are case-insensitive.
 - A dot must always precede the name of the directives. E.g.: `.org 0x200`
 - A colon must always follow an identifier to indicate a label. E.g.: `my_label:`
-- An instruction does not necessarily need to be inside a label.
 
 #### Notation
 
