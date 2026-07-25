@@ -86,19 +86,19 @@ typedef enum {
     OPERAND_VALUE
 } OpType;
 
+typedef struct {
+    OpType type;
+
+    union {
+        uint8_t reg; /* register V0..VF (0..15) */
+        Value value;
+    };
+} Operand;
+
 /* instruction statement */
 typedef struct {
     Mnemonic mnemonic;
-
-    struct {
-        OpType type;
-    
-        union {
-            uint8_t reg; /* register V0..VF (0..15) */
-            Value value;
-        };
-    } operands[NUM_INSTR_OPS];
-
+    Operand operands[NUM_INSTR_OPS];
     size_t op_count;
 } InstrStmt;
 
