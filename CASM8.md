@@ -50,6 +50,6 @@ Directives are responsible for changing the default behavior of the assembler. B
 | Directive | Syntax                   | Description                                                                      | Note                                     |
 | --------- | ------------------------ | -------------------------------------------------------------------------------- | ---------------------------------------- |
 | `org`     | `.org {VALUE}`           | Sets the source address. All subsequent code is assembled based on this address. | ~ |
-| `db`      | `.db {BYTE}, [BYTE...]`  | Writes one or more bytes in memory.                                              | Must be inside a label to be referenced. |
+| `db`      | `.db {BYTE}, [BYTE...]`  | Writes one or more bytes in memory.                                              | Must be inside a label to be referenced. Otherwise, it will be memory garbage that can't be accessed. |
 | `equ`     | `.equ {ID} {VALUE}`      | Defines a symbolic constant that can be referenced throughout the program.       | ~ |
 | `end`     | `.end`                   | Determines the end of the program. Nothing after this directive is read.         | ~ |
