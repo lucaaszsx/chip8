@@ -9,6 +9,7 @@
         - [Notation](#notation)
         - [Labels](#labels)
         - [Directives](#directives)
+        - [Instructions](#instructions)
 
 ## Introduction
 
@@ -53,3 +54,17 @@ Directives are responsible for changing the default behavior of the assembler. B
 | `db`      | `.db {BYTE}, [BYTE...]`  | Writes one or more bytes in memory.                                              | Must be inside a label to be referenced. Otherwise, it will be memory garbage that can't be accessed. |
 | `equ`     | `.equ {ID} {VALUE}`      | Defines a symbolic constant that can be referenced throughout the program.       | ~ |
 | `end`     | `.end`                   | Determines the end of the program. Nothing after this directive is read.         | ~ |
+
+#### Instructions
+
+Assembly instructions are those that will be converted into executable machine code. CASM8 supports a total of 29 instructions, which are converted into operations corresponding to the CHIP-8 ISA. Each instruction has its own operands. When multiple operands are required for a single instruction, the values must be separated by a comma. These instructions do not necessarily need to be placed inside a label, unless a part of the code needs to reference them.
+
+##### Data Movement Instructions
+
+##### Binary Arithmetic Instructions
+
+##### Logical Instructions
+
+##### Control Transfer Instructions
+
+##### I/O Instructions
