@@ -19,3 +19,4 @@ List of implementations already completed or pending for this project.
 - [ ] Add debugger
 - [ ] Add assembler
 - [ ] Fix memory leaks (remove unnecessary allocations, free when no longer in use)
+- [ ] Fix README documentation due to project structure update
