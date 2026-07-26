@@ -8,6 +8,8 @@
 #include "lex.h"
 #include "arena.h"
 
+#define UINT12_MAX 0xfff /* 0x000..0xfff */
+
 static char lex_advance(Lex *lex);
 static char lex_skip(Lex *lex, size_t n);
 static char lex_peek(Lex *lex);
@@ -42,8 +44,8 @@ static uint16_t lex_read_digits(Lex *lex, int base, const Token *tk) {
         char digit = lex_advance(lex);
         result = result * base + (base == 16 ? hexvalue(digit) : digit - '0');
 
-        if (result > UINT16_MAX) {
-            fprintf(stderr, "invalid number at %zu:%zu\n", tk->line, tk->column);
+        if (result > UINT12_MAX) {
+            fprintf(stderr, "number out-of-range (0x%03x) at %zu:%zu\n", UINT12_MAX, tk->line, tk->column);
             exit(EXIT_FAILURE);
         }
     }
