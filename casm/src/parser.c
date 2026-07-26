@@ -35,50 +35,42 @@ static DrtType get_drt_type(char *s) {
 }
 
 /* Mnemonics table */
-typedef enum {
-    OPKIND_REG = 1 << 0,
-    OPKIND_ADDR = 1 << 1,
-    OPKIND_BYTE = 1 << 2,
-    OPKIND_NIBBLE = 1 << 3
-} OpKind;
-
 typedef struct {
     char *name;
     Mnemonic mnemonic;
-    OpKind ops[NUM_INSTR_OPS];
     size_t expected_ops;
 } MnemonicEntry;
 
 static const MnemonicEntry mnemonic_table[] = {
-    {"cls", MNEMONIC_CLS, {0}, 0},
-    {"rts", MNEMONIC_RTS, {0}, 0},
-    {"jmp", MNEMONIC_JMP, {OPKIND_ADDR}, 1},
-    {"jsr", MNEMONIC_JSR, {OPKIND_ADDR}, 1},
-    {"skeq", MNEMONIC_SKEQ, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
-    {"skne", MNEMONIC_SKNE, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
-    {"mov", MNEMONIC_MOV, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
-    {"add", MNEMONIC_ADD, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
-    {"sub", MNEMONIC_SUB, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
-    {"or", MNEMONIC_OR, {OPKIND_REG, OPKIND_REG}, 2},
-    {"and", MNEMONIC_AND, {OPKIND_REG, OPKIND_REG}, 2},
-    {"xor", MNEMONIC_XOR, {OPKIND_REG, OPKIND_REG}, 2},
-    {"shr", MNEMONIC_SHR, {OPKIND_REG}, 1},
-    {"shl", MNEMONIC_SHL, {OPKIND_REG}, 1},
-    {"mvi", MNEMONIC_MVI, {OPKIND_ADDR}, 1},
-    {"jmi", MNEMONIC_JMI, {OPKIND_REG, OPKIND_BYTE}, 2},
-    {"rand", MNEMONIC_RAND, {OPKIND_REG, OPKIND_BYTE}, 2},
-    {"draw", MNEMONIC_DRAW, {OPKIND_REG, OPKIND_REG, OPKIND_NIBBLE}, 3},
-    {"skpr", MNEMONIC_SKPR, {OPKIND_REG}, 1},
-    {"skup", MNEMONIC_SKUP, {OPKIND_REG}, 1},
-    {"gdelay", MNEMONIC_GDELAY, {OPKIND_REG}, 1},
-    {"sdelay", MNEMONIC_SDELAY, {OPKIND_REG}, 1},
-    {"ssound", MNEMONIC_SSOUND, {OPKIND_REG}, 1},
-    {"adi", MNEMONIC_ADI, {OPKIND_REG}, 1},
-    {"key", MNEMONIC_KEY, {OPKIND_REG}, 1},
-    {"font", MNEMONIC_FONT, {OPKIND_REG}, 1},
-    {"bcd", MNEMONIC_BCD, {OPKIND_REG}, 1},
-    {"str", MNEMONIC_STR, {OPKIND_REG}, 1},
-    {"ldr", MNEMONIC_LDR, {OPKIND_REG}, 1}
+    {"cls", MNEMONIC_CLS, 0},
+    {"rts", MNEMONIC_RTS, 0},
+    {"jmp", MNEMONIC_JMP, 1},
+    {"jsr", MNEMONIC_JSR, 1},
+    {"skeq", MNEMONIC_SKEQ, 2},
+    {"skne", MNEMONIC_SKNE, 2},
+    {"mov", MNEMONIC_MOV, 2},
+    {"add", MNEMONIC_ADD, 2},
+    {"sub", MNEMONIC_SUB, 2},
+    {"or", MNEMONIC_OR, 2},
+    {"and", MNEMONIC_AND, 2},
+    {"xor", MNEMONIC_XOR, 2},
+    {"shr", MNEMONIC_SHR, 1},
+    {"shl", MNEMONIC_SHL, 1},
+    {"mvi", MNEMONIC_MVI, 1},
+    {"jmi", MNEMONIC_JMI, 2},
+    {"rand", MNEMONIC_RAND, 2},
+    {"draw", MNEMONIC_DRAW, 3},
+    {"skpr", MNEMONIC_SKPR, 1},
+    {"skup", MNEMONIC_SKUP, 1},
+    {"gdelay", MNEMONIC_GDELAY, 1},
+    {"sdelay", MNEMONIC_SDELAY, 1},
+    {"ssound", MNEMONIC_SSOUND, 1},
+    {"adi", MNEMONIC_ADI, 1},
+    {"key", MNEMONIC_KEY, 1},
+    {"font", MNEMONIC_FONT, 1},
+    {"bcd", MNEMONIC_BCD, 1},
+    {"str", MNEMONIC_STR, 1},
+    {"ldr", MNEMONIC_LDR, 1}
 };
 
 /* number of mnemonics */
@@ -90,15 +82,6 @@ static int get_mnemonic_idx(char *s) {
             return k;
     }
     return -1;
-}
-
-static bool opkind_v(OpKind kind, OpType type) {
-    if ((kind & OPKIND_REG) && type == OPERAND_REG)
-        return true;
-    if ((kind & (OPKIND_ADDR | OPKIND_BYTE | OPKIND_NIBBLE)) && type == OPERAND_VALUE)
-        return true;
-
-    return false;
 }
 
 //
@@ -241,14 +224,6 @@ static Stmt parser_instr_stmt(Lex *lex, size_t idx) {
     if (stmt.instr.op_count != entry.expected_ops) {
         fprintf(stderr, "%s expects %zu operands, got %zu at %zu:%zu\n", entry.name, entry.expected_ops, stmt.instr.op_count, next.line, next.column);
         exit(EXIT_FAILURE);
-    }
-
-    for (size_t k = 0; k < stmt.instr.op_count; k++) {
-        OpType got = stmt.instr.operands[k].type;
-        if (!opkind_v(entry.ops[k], got)) {
-            fprintf(stderr, "operand %zu of %s has wrong kind\n", k + 1, entry.name);
-            exit(EXIT_FAILURE);
-        }
     }
     
     return stmt;
