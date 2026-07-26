@@ -23,5 +23,5 @@ typedef struct {
 
 void symbol_tinit(SymbolTable *);
 void symbol_tfree(SymbolTable *);
-bool symbol_create(SymbolTable *, SymbolType type, const char *name, uint16_t address);
+bool symbol_define(SymbolTable *, SymbolType type, const char *name, uint16_t address);
 Symbol *symbol_lookup(SymbolTable *, const char *name);

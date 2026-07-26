@@ -18,7 +18,7 @@ void symbol_tfree(SymbolTable *table) {
     table->count = 0;
 }
 
-bool symbol_create(SymbolTable *table, SymbolType type, const char *name, uint16_t address) {
+bool symbol_define(SymbolTable *table, SymbolType type, const char *name, uint16_t address) {
     if (symbol_lookup(table, name) != NULL)
         return false;
 
