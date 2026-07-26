@@ -1,6 +1,8 @@
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <stdio.h>
 #include <ctype.h>
 #include "lex.h"
@@ -27,6 +29,26 @@ void lex_init(Lex *lex, ArenaAllocator *arena, const char *src) {
 static int hexvalue(char c) {
     if (isdigit(c)) return c - '0';
     return (tolower(c) - 'a') + 10;
+}
+
+static uint16_t lex_read_digits(Lex *lex, int base, const Token *tk) {
+    assert(base == 10 || base == 16);
+
+    uint result = 0;
+    while (
+        (base == 10 && isdigit(lex_peek(lex))) ||
+        (base == 16 && isxdigit(lex_peek(lex)))
+    ) {
+        char digit = lex_advance(lex);
+        result = result * base + (base == 16 ? hexvalue(digit) : digit - '0');
+
+        if (result > UINT16_MAX) {
+            fprintf(stderr, "invalid number at %zu:%zu\n", tk->line, tk->column);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    return result;
 }
 
 static Token lex_jump(Lex *lex) {
@@ -67,18 +89,10 @@ static Token lex_jump(Lex *lex) {
         lex_skip(lex, 2); // skip "0x"
 
         tk.type = TK_NUMBER;
-
-        while (isxdigit(lex_peek(lex))) {
-            // shift existing digits to the left (base 16) and add the new digit
-            tk.seminfo.i = tk.seminfo.i * 16 + hexvalue(lex_advance(lex));
-        }
+        tk.seminfo.i = lex_read_digits(lex, 16, &tk);
     } else if (isdigit(lex_peek(lex))) {
         tk.type = TK_NUMBER;
-
-        while (isdigit(lex_peek(lex))) {
-            // shift existing digits to the left (base 10) and add the new digit
-            tk.seminfo.i = tk.seminfo.i * 10 + (lex_advance(lex) - '0');
-        }
+        tk.seminfo.i = lex_read_digits(lex, 10, &tk);
     } else if (is_delimiter(lex_peek(lex))) {
         char c = lex_advance(lex);
 
