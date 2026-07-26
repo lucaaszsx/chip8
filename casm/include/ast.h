@@ -121,4 +121,6 @@ typedef struct {
         InstrStmt instr; /* instruction */
         LabelStmt label; /* label */
     };
+
+    size_t line; /* statement line */
 } Stmt;

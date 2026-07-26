@@ -164,7 +164,7 @@ static void parser_read_bytes(Lex *lex, uint8_t **out_bytes, size_t *out_count) 
 }
 
 static Stmt parser_directive_stmt(Lex *lex) {
-    Stmt stmt = {.type=STATEMENT_DIRECTIVE};
+    Stmt stmt = {.type=STATEMENT_DIRECTIVE, .line=lex->line};
     Token tk = parser_expect(lex, TK_IDENTIFIER);
 
     switch ((stmt.drt.type = get_drt_type(tk.seminfo.id))) {
@@ -196,7 +196,7 @@ static Stmt parser_directive_stmt(Lex *lex) {
 static Stmt parser_instr_stmt(Lex *lex, size_t idx) {
     MnemonicEntry entry = mnemonic_table[idx];
 
-    Stmt stmt = {.type=STATEMENT_INSTR};
+    Stmt stmt = {.type=STATEMENT_INSTR, .line=lex->line};
     stmt.instr.mnemonic = entry.mnemonic;
     stmt.instr.op_count = 0;
 
@@ -274,7 +274,8 @@ bool parser_stmt(Lex *lex, Stmt *out) {
                 lex_next(lex); // consume TK_COLON (:)
                 *out = (Stmt){
                     .type=STATEMENT_LABEL,
-                    .label=(LabelStmt){.name=tk.seminfo.id}
+                    .label=(LabelStmt){.name=tk.seminfo.id},
+                    .line=lex->line
                 };
                 break;
             } else if ((mnemonic_idx = get_mnemonic_idx(tk.seminfo.id)) > -1) {
