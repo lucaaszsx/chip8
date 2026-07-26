@@ -24,4 +24,4 @@ typedef struct {
 void symbol_tinit(SymbolTable *);
 void symbol_tfree(SymbolTable *);
 bool symbol_define(SymbolTable *, SymbolType type, const char *name, uint16_t address);
-Symbol *symbol_lookup(SymbolTable *, const char *name);
+bool *symbol_lookup(SymbolTable *, const char *name, uint16_t *out);

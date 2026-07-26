@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <string.h>
 #include "symbol.h"
 
@@ -40,11 +41,13 @@ bool symbol_define(SymbolTable *table, SymbolType type, const char *name, uint16
     return true;
 }
 
-Symbol *symbol_lookup(SymbolTable *table, const char *name) {
+bool symbol_lookup(SymbolTable *table, const char *name, uint16_t *out) {
     for (size_t i = 0; i < table->count; i++) {
         Symbol *sym = &table->symbols[i];
-        if (strcmp(sym->name, name) == 0)
-            return sym;
+        if (strcmp(sym->name, name) == 0) {
+            *out = sym->address;
+            return true;
+        }
     }
-    return NULL;
+    return false;
 }
