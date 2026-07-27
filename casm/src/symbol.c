@@ -20,7 +20,7 @@ void symbol_tfree(SymbolTable *table) {
 }
 
 bool symbol_define(SymbolTable *table, SymbolType type, const char *name, uint16_t address) {
-    if (symbol_lookup(table, name) != NULL)
+    if (!symbol_lookup(table, name, NULL))
         return false;
 
     if (table->count == table->cap) {
@@ -45,7 +45,7 @@ bool symbol_lookup(SymbolTable *table, const char *name, uint16_t *out) {
     for (size_t i = 0; i < table->count; i++) {
         Symbol *sym = &table->symbols[i];
         if (strcmp(sym->name, name) == 0) {
-            *out = sym->address;
+            if (out != NULL) *out = sym->address;
             return true;
         }
     }
