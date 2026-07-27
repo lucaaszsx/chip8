@@ -124,3 +124,6 @@ typedef struct {
 
     size_t line; /* statement line */
 } Stmt;
+
+/* public method to get a statement size and correctly increments the location counter (or PC/program counter) */
+size_t ast_stmt_size(const Stmt stmt);
