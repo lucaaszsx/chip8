@@ -12,8 +12,8 @@ typedef struct {
     size_t offset;
 } ArenaAllocator;
 
-bool arena_init(ArenaAllocator *arena);
+void arena_init(ArenaAllocator *arena);
+void arena_free(ArenaAllocator *arena);
 void *arena_allocate(ArenaAllocator *arena, size_t count);
 char *arena_strdup(ArenaAllocator *arena, const char *src, size_t len);
 uint8_t *arena_memcpy(ArenaAllocator *arena, const uint8_t *bytes, size_t count);
-void arena_destroy(ArenaAllocator *arena);

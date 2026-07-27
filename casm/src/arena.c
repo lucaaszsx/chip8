@@ -3,14 +3,14 @@
 #include "arena.h"
 #include "util.h"
 
-bool arena_init(ArenaAllocator *arena) {
+void arena_init(ArenaAllocator *arena) {
     arena->buffer = xmalloc(ARENA_DEFAULT_SIZE);
-    if (arena->buffer == NULL) return false;
-
     arena->capacity = ARENA_DEFAULT_SIZE;
     arena->offset = 0;
+}
 
-    return true;
+void arena_free(ArenaAllocator *arena) {
+    free(arena->buffer);
 }
 
 void *arena_allocate(ArenaAllocator *arena, size_t count) {
@@ -20,10 +20,7 @@ void *arena_allocate(ArenaAllocator *arena, size_t count) {
         while (new_capacity < end_offset)
             new_capacity *= 2;
 
-        void *new_buffer = xrealloc(arena->buffer, new_capacity);
-        if (new_buffer == NULL) return NULL;
-
-        arena->buffer = new_buffer;
+        arena->buffer = xrealloc(arena->buffer, new_capacity);
         arena->capacity = new_capacity;
     }
 
@@ -35,8 +32,6 @@ void *arena_allocate(ArenaAllocator *arena, size_t count) {
 
 char *arena_strdup(ArenaAllocator *arena, const char *src, size_t len) {
     char *dst = arena_allocate(arena, len + 1);
-    if (dst == NULL) return NULL;
-
     memcpy(dst, src, len);
     dst[len] = '\0';
 
@@ -45,13 +40,7 @@ char *arena_strdup(ArenaAllocator *arena, const char *src, size_t len) {
 
 uint8_t *arena_memcpy(ArenaAllocator *arena, const uint8_t *bytes, size_t count) {
     uint8_t *dst = arena_allocate(arena, count);
-    if (dst == NULL) return NULL;
-
     memcpy(dst, bytes, count);
 
     return dst;
-}
-
-void arena_destroy(ArenaAllocator *arena) {
-    free(arena->buffer);
 }
