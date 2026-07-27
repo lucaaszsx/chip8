@@ -1,9 +1,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include "arena.h"
+#include "util.h"
 
 bool arena_init(ArenaAllocator *arena) {
-    arena->buffer = malloc(ARENA_DEFAULT_SIZE);
+    arena->buffer = xmalloc(ARENA_DEFAULT_SIZE);
     if (arena->buffer == NULL) return false;
 
     arena->capacity = ARENA_DEFAULT_SIZE;
@@ -19,7 +20,7 @@ void *arena_allocate(ArenaAllocator *arena, size_t count) {
         while (new_capacity < end_offset)
             new_capacity *= 2;
 
-        void *new_buffer = realloc(arena->buffer, new_capacity);
+        void *new_buffer = xrealloc(arena->buffer, new_capacity);
         if (new_buffer == NULL) return NULL;
 
         arena->buffer = new_buffer;
