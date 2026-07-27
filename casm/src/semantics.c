@@ -57,6 +57,8 @@ void sem_collect(Semantics *sem, Stmt stmt) {
             /* nothing to collect for symbol table in instructions */
             break;
     }
+
+    sem->pc += ast_stmt_size(stmt);
 }
 
 static bool op_range_check(OpKind kind, uint16_t value) {
