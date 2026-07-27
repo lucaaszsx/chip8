@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "tables.h"
 #include "parser.h"
 #include "arena.h"
 #include "lex.h"
-#include "util.h"
 
 /* initial quantity to be allocated for reading bytes in the db directive */
 #define DB_READ_BYTES_ICAP 32
@@ -78,7 +78,7 @@ static Stmt parser_directive_stmt(Lex *lex) {
     Stmt stmt = {.type=STATEMENT_DIRECTIVE, .line=lex->line};
     Token tk = parser_expect(lex, TK_IDENTIFIER);
 
-    switch ((stmt.drt.type = get_drt_type(tk.seminfo.id))) {
+    switch ((stmt.drt.type = get_directive_type(tk.seminfo.id))) {
         case DIRECTIVE_ORG:
             stmt.drt.org = parser_value(lex);
             break;
@@ -104,11 +104,9 @@ static Stmt parser_directive_stmt(Lex *lex) {
     return stmt;
 }
 
-static Stmt parser_instr_stmt(Lex *lex, size_t idx) {
-    MnemonicEntry entry = mnemonic_table[idx];
-
+static Stmt parser_instr_stmt(Lex *lex, MnemonicEntry mnemonic) {
     Stmt stmt = {.type=STATEMENT_INSTR, .line=lex->line};
-    stmt.instr.mnemonic = entry.mnemonic;
+    stmt.instr.type = mnemonic.type;
     stmt.instr.op_count = 0;
 
     Token next = lex_lookahead(lex);
@@ -149,8 +147,8 @@ static Stmt parser_instr_stmt(Lex *lex, size_t idx) {
     }
 
     check_count:
-    if (stmt.instr.op_count != entry.expected_ops) {
-        fprintf(stderr, "%s expects %zu operands, got %zu at %zu:%zu\n", entry.name, entry.expected_ops, stmt.instr.op_count, next.line, next.column);
+    if (stmt.instr.op_count != mnemonic.expected_ops) {
+        fprintf(stderr, "%s expects %zu operands, got %zu at %zu:%zu\n", mnemonic.name, mnemonic.expected_ops, stmt.instr.op_count, next.line, next.column);
         exit(EXIT_FAILURE);
     }
     
@@ -171,7 +169,7 @@ bool parser_stmt(Lex *lex, Stmt *out) {
             break;
 
         case TK_IDENTIFIER: {
-            int mnemonic_idx;
+            MnemonicEntry mnemonic;
 
             if (lex_lookahead(lex).type == TK_COLON) {
                 lex_next(lex); // consume TK_COLON (:)
@@ -181,8 +179,8 @@ bool parser_stmt(Lex *lex, Stmt *out) {
                     .line=lex->line
                 };
                 break;
-            } else if ((mnemonic_idx = get_mnemonic_idx(tk.seminfo.id)) > -1) {
-                *out = parser_instr_stmt(lex, mnemonic_idx);
+            } else if (get_mnemonic(tk.seminfo.id, -1, &mnemonic)) {
+                *out = parser_instr_stmt(lex, mnemonic);
                 break;
             }
 
