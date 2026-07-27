@@ -1,6 +1,8 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "semantics.h"
+#include "tables.h"
 #include "symbol.h"
 #include "ast.h"
 
@@ -57,4 +59,40 @@ void sem_collect(Semantics *sem, Stmt stmt) {
     }
 }
 
-void sem_check(Semantics *sem, Stmt stmt) {}
+static bool op_range_check(OpKind kind, uint16_t value) {
+    assert(kind == OPKIND_NIBBLE || kind == OPKIND_BYTE || kind == OPKIND_ADDR);
+
+    return (kind == OPKIND_NIBBLE && value <= 0xf) ||
+        (kind == OPKIND_BYTE && value <= 0xff) ||
+        (kind == OPKIND_ADDR && value <= 0xfff);
+}
+
+void sem_check(Semantics *sem, Stmt stmt) {
+    if (stmt.type != STATEMENT_INSTR) return;
+
+    MnemonicEntry mnemonic;
+    assert(get_mnemonic(NULL, stmt.instr.type, &mnemonic));
+    assert(stmt.instr.op_count == mnemonic.expected_ops); // the parser must have picked up the correct number of operands
+
+    for (size_t o = 0; o < stmt.instr.op_count; o++) {
+        const Operand op = stmt.instr.operands[o];
+        OpKind expected = mnemonic.ops[o];
+
+        switch (op.type) {
+            case OPERAND_VALUE: {
+                uint16_t value = resolve_value(sem, op.value);
+                if (!op_range_check(expected, value)) {
+                    fprintf(stderr, "operand %zu of %s in line %zu is out-of-range\n", o + 1, mnemonic.name, stmt.line);
+                    exit(EXIT_FAILURE);
+                }
+            }
+
+            case OPERAND_REG: {
+                if (expected != OPKIND_REG) {
+                    fprintf(stderr, "unexpected register in operand %zu in instruction %s at line %zu\n", o + 1, mnemonic.name, stmt.line);
+                    exit(EXIT_FAILURE);
+                }
+            }
+        }
+    }
+}
