@@ -7,16 +7,16 @@
 #define SYMBOL_TABLE_ICAP 16
 
 void symbol_tinit(SymbolTable *table) {
-    table->cap = SYMBOL_TABLE_ICAP;
+    table->capacity = SYMBOL_TABLE_ICAP;
     table->count = 0;
-    table->symbols = xmalloc(table->cap * sizeof(Symbol));
+    table->symbols = xmalloc(table->capacity * sizeof(Symbol));
 }
 
 void symbol_tfree(SymbolTable *table) {
     free(table->symbols);
 
     table->symbols = NULL;
-    table->cap = 0;
+    table->capacity = 0;
     table->count = 0;
 }
 
@@ -24,9 +24,9 @@ bool symbol_define(SymbolTable *table, SymbolType type, const char *name, uint16
     if (!symbol_lookup(table, name, NULL))
         return false;
 
-    if (table->count == table->cap) {
-        table->cap *= 2;
-        table->symbols = xrealloc(table->symbols, table->cap * sizeof(Symbol));
+    if (table->count == table->capacity) {
+        table->capacity *= 2;
+        table->symbols = xrealloc(table->symbols, table->capacity * sizeof(Symbol));
     }
 
     table->symbols[table->count++] = (Symbol){

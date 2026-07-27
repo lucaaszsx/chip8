@@ -18,10 +18,10 @@ typedef struct {
 typedef struct {
     Symbol *symbols;
     size_t count;
-    size_t cap;
+    size_t capacity;
 } SymbolTable;
 
-void symbol_tinit(SymbolTable *);
-void symbol_tfree(SymbolTable *);
-bool symbol_define(SymbolTable *, SymbolType type, const char *name, uint16_t address);
+void symbol_tinit(SymbolTable *table);
+void symbol_tfree(SymbolTable *table);
+bool symbol_define(SymbolTable *table, SymbolType type, const char *name, uint16_t address);
 bool symbol_lookup(SymbolTable *table, const char *name, uint16_t *out);
