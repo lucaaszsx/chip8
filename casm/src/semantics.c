@@ -6,6 +6,11 @@
 #include "symbol.h"
 #include "ast.h"
 
+void sem_init(Semantics *sem, SymbolTable *table) {
+    sem->table = table;
+    sem->pc = 0;
+}
+
 static uint16_t resolve_value(Semantics *sem, Value value) {
     if (value.type == VALUE_IMMEDIATE)
         return value.value;

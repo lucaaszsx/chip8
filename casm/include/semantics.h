@@ -10,5 +10,6 @@ typedef struct {
     SymbolTable *table;
 } Semantics;
 
+void sem_init(Semantics *sem, SymbolTable *table);
 void sem_collect(Semantics *sem, Stmt stmt);
 void sem_check(Semantics *sem, Stmt stmt);
