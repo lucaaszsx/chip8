@@ -4,13 +4,13 @@
 #include "symbol.h"
 #include "ast.h"
 
-static uint16_t resolve_value(Semantics *sem, Value value, const char *ctx) {
+static uint16_t resolve_value(Semantics *sem, Value value) {
     if (value.type == VALUE_IMMEDIATE)
         return value.value;
 
     uint16_t address;
     if (!symbol_lookup(sem->table, value.ref, &address)) {
-        fprintf(stderr, "%s: reference to undefined symbol \"%s\"\n", ctx, value.ref);
+        fprintf(stderr, "reference to undefined symbol \"%s\"\n", value.ref);
         exit(EXIT_FAILURE);
     }
 
@@ -30,12 +30,12 @@ void sem_collect(Semantics *sem, Stmt stmt) {
         case STATEMENT_DIRECTIVE: {
             switch (stmt.drt.type) {
                 case DIRECTIVE_ORG:
-                    sem->pc = resolve_value(sem, stmt.drt.org, "org target");
+                    sem->pc = resolve_value(sem, stmt.drt.org);
                     break;
 
                 case DIRECTIVE_EQU: {
-                    uint16_t address = resolve_value(sem, stmt.drt.equ.value, "equ value");
-                    if (!symbol_define(sem->table, SYMBOL_EQU, stmt.drt.equ.name, sem->pc)) {
+                    uint16_t value = resolve_value(sem, stmt.drt.equ.value);
+                    if (!symbol_define(sem->table, SYMBOL_EQU, stmt.drt.equ.name, value)) {
                         fprintf(stderr, "duplicate constant \"%s\" (line %zu)\n", stmt.drt.equ.name, stmt.line);
                         exit(EXIT_FAILURE);
                     }
