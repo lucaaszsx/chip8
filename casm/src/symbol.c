@@ -38,7 +38,7 @@ bool symbol_define(SymbolTable *table, SymbolType type, const char *name, uint16
     return true;
 }
 
-bool symbol_lookup(SymbolTable *table, const char *name, uint16_t *out) {
+bool symbol_lookup(const SymbolTable *table, const char *name, uint16_t *out) {
     for (size_t i = 0; i < table->count; i++) {
         Symbol *sym = &table->symbols[i];
         if (strcmp(sym->name, name) == 0) {
@@ -47,4 +47,14 @@ bool symbol_lookup(SymbolTable *table, const char *name, uint16_t *out) {
         }
     }
     return false;
+}
+
+bool symbol_resolve_value(const SymbolTable *table, const Value value, uint16_t *out) {
+    if (value.type == VALUE_IMMEDIATE) {
+        *out = value.value;
+        return true;
+    }
+    if (!symbol_lookup(table, value.ref, out))
+        return false;
+    return true;
 }

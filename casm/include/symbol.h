@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "ast.h"
 
 typedef enum {
     SYMBOL_LABEL,
@@ -24,4 +25,5 @@ typedef struct {
 void symbol_tinit(SymbolTable *table);
 void symbol_tfree(SymbolTable *table);
 bool symbol_define(SymbolTable *table, SymbolType type, const char *name, uint16_t address);
-bool symbol_lookup(SymbolTable *table, const char *name, uint16_t *out);
+bool symbol_lookup(const SymbolTable *table, const char *name, uint16_t *out);
+bool symbol_resolve_value(const SymbolTable *table, const Value value, uint16_t *out);

@@ -11,17 +11,13 @@ void sem_init(Semantics *sem, SymbolTable *table) {
     sem->pc = 0;
 }
 
-static uint16_t resolve_value(Semantics *sem, Value value) {
-    if (value.type == VALUE_IMMEDIATE)
-        return value.value;
-
-    uint16_t address;
-    if (!symbol_lookup(sem->table, value.ref, &address)) {
+static uint16_t resolve_value(const Semantics *sem, const Value value) {
+    uint16_t result;
+    if (!symbol_resolve_value(sem->table, value, &result)) {
         fprintf(stderr, "reference to undefined symbol \"%s\"\n", value.ref);
         exit(EXIT_FAILURE);
     }
-
-    return address;
+    return result;
 }
 
 void sem_collect(Semantics *sem, Stmt stmt) {
