@@ -34,7 +34,7 @@ typedef enum {
     MNEMONIC_BCD,
     MNEMONIC_STR,
     MNEMONIC_LDR
-} Mnemonic;
+} MnemonicType;
 
 typedef enum {
     VALUE_IMMEDIATE,
@@ -57,11 +57,11 @@ typedef enum {
     DIRECTIVE_DB,
     DIRECTIVE_EQU,
     DIRECTIVE_END
-} DrtType;
+} DirectiveType;
 
 /* directive statement */
 typedef struct {
-    DrtType type;
+    DirectiveType type;
 
     union {
         Value org; /* org */
@@ -97,7 +97,7 @@ typedef struct {
 
 /* instruction statement */
 typedef struct {
-    Mnemonic mnemonic;
+    MnemonicType type;
     Operand operands[NUM_INSTR_OPS];
     size_t op_count;
 } InstrStmt;
