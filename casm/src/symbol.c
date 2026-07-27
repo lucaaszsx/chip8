@@ -26,11 +26,7 @@ bool symbol_define(SymbolTable *table, SymbolType type, const char *name, uint16
 
     if (table->count == table->cap) {
         table->cap *= 2;
-
-        Symbol *new_symbols = xrealloc(table->symbols, table->cap * sizeof(Symbol));
-        if (new_symbols == NULL) return false;
-
-        table->symbols = new_symbols;
+        table->symbols = xrealloc(table->symbols, table->cap * sizeof(Symbol));
     }
 
     table->symbols[table->count++] = (Symbol){
