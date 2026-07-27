@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "symbol.h"
+#include "util.h"
 
 /* initial quantity to be allocated for symbols */
 #define SYMBOL_TABLE_ICAP 16
@@ -8,7 +9,7 @@
 void symbol_tinit(SymbolTable *table) {
     table->cap = SYMBOL_TABLE_ICAP;
     table->count = 0;
-    table->symbols = malloc(table->cap * sizeof(Symbol));
+    table->symbols = xmalloc(table->cap * sizeof(Symbol));
 }
 
 void symbol_tfree(SymbolTable *table) {
@@ -26,7 +27,7 @@ bool symbol_define(SymbolTable *table, SymbolType type, const char *name, uint16
     if (table->count == table->cap) {
         table->cap *= 2;
 
-        Symbol *new_symbols = realloc(table->symbols, table->cap * sizeof(Symbol));
+        Symbol *new_symbols = xrealloc(table->symbols, table->cap * sizeof(Symbol));
         if (new_symbols == NULL) return false;
 
         table->symbols = new_symbols;
