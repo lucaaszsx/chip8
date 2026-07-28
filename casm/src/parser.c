@@ -46,12 +46,12 @@ static void parser_read_bytes(Lex *lex, uint8_t **out_bytes, size_t *out_count) 
     ByteBuffer tmp;
     buf_init(&tmp, DB_READ_BYTES_ICAP);
 
-    for (;;) {
+    for (size_t i = 1; ; i++) {
         Token tk = parser_expect(lex, TK_NUMBER);
         uint16_t value = tk.seminfo.i;
 
         if (value > UINT8_MAX) {
-            fprintf(stderr, "invalid byte at %zu:%zu\n", tk.line, tk.column);
+            fprintf(stderr, "invalid byte in position %zu at %zu:%zu\n", i, tk.line, tk.column);
             exit(EXIT_FAILURE);
         }
 
