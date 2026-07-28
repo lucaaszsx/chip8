@@ -5,3 +5,4 @@ bin/
 
 # Misc
 compile_commands.json
+.zed
