@@ -26,5 +26,16 @@ void pipe_run(Pipe *pipe, const char *src) {
     for (size_t i = 0; i < stmt_count; i++)
         cg_emit_stmt(&pipe->cg, stmts[i]);
 
-    printf("run successfully. now you can sleep.");
+    uint8_t *bytes = pipe->cg.buffer.data;
+    printf("%zu bytes\n", pipe->cg.buffer.size);
+    for (size_t i = 0; i < pipe->cg.buffer.size; i += 2)
+        printf("0x%04x\n", (bytes[i] << 8) | bytes[i + 1]);
+
+    // free memory
+    cg_free(&pipe->cg);
+    symbol_tfree(&pipe->table);
+    parser_free(&pipe->parser);
+    arena_free(&pipe->arena);
+
+    printf("run successfully. now you can sleep.\n");
 }
