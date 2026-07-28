@@ -1,5 +1,7 @@
 #include <assert.h>
 #include "codegen.h"
+#include "ast.h"
+#include "buffer.h"
 
 /* opcodes */
 #define OPCODE_CLS 0x00e0 // 0x00E0
@@ -41,16 +43,15 @@
 #define CG_BUFFER_ICAP 1024
 
 void cg_init(CG *cg, SymbolTable *table) {
-    buf_init(cg->buffer, CG_BUFFER_ICAP);
+    buf_init(&cg->buffer, CG_BUFFER_ICAP);
 
-    cg->pc = 0;
     cg->table = table;
+    cg->pc = 0;
 }
 
 void cg_free(CG *cg) {
-    buf_free(cg->buffer);
+    buf_free(&cg->buffer);
 
-    cg->buffer = NULL;
     cg->table = NULL;
     cg->pc = 0;
 }
@@ -208,29 +209,49 @@ static uint16_t resolve_value(const CG *cg, const Value value) {
     return result;
 }
 
+static void cg_emit_byte(CG *cg, uint8_t byte) {
+    buf_write_u8(&cg->buffer, byte);
+}
+
 static void cg_emit_word(CG *cg, uint16_t word) {
-    buf_write_u16(cg->buffer, word);
+    buf_write_u16(&cg->buffer, word);
 }
 
 void cg_emit_stmt(CG *cg, Stmt stmt) {
-    if (stmt.type == STATEMENT_INSTR) {
-        InstrStmt instr = stmt.instr;
-        ROP v[instr.op_count];
-
-        for (size_t o = 0; o < instr.op_count; o++) {
-            Operand op = instr.operands[o];
-            
-            switch (op.type) {
-                case OPERAND_REG:
-                    v[o] = (ROP){.type=op.type, .value=op.reg};
-                    break;
-                case OPERAND_VALUE:
-                    v[o] = (ROP){.type=op.type, .value=resolve_value(cg, op.value)};
-                    break;
+    switch (stmt.type) {
+        case STATEMENT_INSTR: {
+            InstrStmt instr = stmt.instr;
+            ROP v[instr.op_count];
+    
+            for (size_t o = 0; o < instr.op_count; o++) {
+                Operand op = instr.operands[o];
+                
+                switch (op.type) {
+                    case OPERAND_REG:
+                        v[o] = (ROP){.type=op.type, .value=op.reg};
+                        break;
+                    case OPERAND_VALUE:
+                        v[o] = (ROP){.type=op.type, .value=resolve_value(cg, op.value)};
+                        break;
+                }
             }
+    
+            cg_emit_word(cg, get_word(instr.type, v));
+            break;
         }
 
-        cg_emit_word(cg, get_word(instr.type, v));
+        case STATEMENT_DIRECTIVE: {
+            if (stmt.drt.type == DIRECTIVE_DB) {
+                for (size_t i = 0; i < stmt.drt.db.count; i++)
+                    cg_emit_byte(cg, stmt.drt.db.bytes[i]);
+            }
+            break;
+        }
+
+        case STATEMENT_LABEL:
+            /* does nothing */
+            break;
     }
+
     cg->pc += ast_stmt_size(stmt);
 }

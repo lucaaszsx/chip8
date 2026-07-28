@@ -5,7 +5,7 @@
 #include "ast.h"
 
 typedef struct {
-    ByteBuffer *buffer;
+    ByteBuffer buffer;
     SymbolTable *table;
     uint16_t pc;
 } CG;
