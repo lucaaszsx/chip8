@@ -5,10 +5,10 @@
 
 /* Directives table */
 const DirectiveEntry drt_table[] = {
-    {"org", DIRECTIVE_ORG},
-    {"db", DIRECTIVE_DB},
-    {"equ", DIRECTIVE_EQU},
-    {"end", DIRECTIVE_END},
+    {"ORG", DIRECTIVE_ORG},
+    {"DB", DIRECTIVE_DB},
+    {"EQU", DIRECTIVE_EQU},
+    {"END", DIRECTIVE_END},
 };
 
 /* number of directives */
@@ -24,35 +24,35 @@ DirectiveType get_directive_type(char *s) {
 
 /* Mnemonics table */
 const MnemonicEntry mnemonic_table[] = {
-    {"cls", MNEMONIC_CLS, {0}, 0},
-    {"rts", MNEMONIC_RTS, {0}, 0},
-    {"jmp", MNEMONIC_JMP, {OPKIND_ADDR}, 1},
-    {"jsr", MNEMONIC_JSR, {OPKIND_ADDR}, 1},
-    {"skeq", MNEMONIC_SKEQ, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
-    {"skne", MNEMONIC_SKNE, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
-    {"mov", MNEMONIC_MOV, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
-    {"add", MNEMONIC_ADD, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
-    {"sub", MNEMONIC_SUB, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
-    {"or", MNEMONIC_OR, {OPKIND_REG, OPKIND_REG}, 2},
-    {"and", MNEMONIC_AND, {OPKIND_REG, OPKIND_REG}, 2},
-    {"xor", MNEMONIC_XOR, {OPKIND_REG, OPKIND_REG}, 2},
-    {"shr", MNEMONIC_SHR, {OPKIND_REG}, 1},
-    {"shl", MNEMONIC_SHL, {OPKIND_REG}, 1},
-    {"mvi", MNEMONIC_MVI, {OPKIND_ADDR}, 1},
-    {"jmi", MNEMONIC_JMI, {OPKIND_REG, OPKIND_BYTE}, 2},
-    {"rand", MNEMONIC_RAND, {OPKIND_REG, OPKIND_BYTE}, 2},
-    {"draw", MNEMONIC_DRAW, {OPKIND_REG, OPKIND_REG, OPKIND_NIBBLE}, 3},
-    {"skpr", MNEMONIC_SKPR, {OPKIND_REG}, 1},
-    {"skup", MNEMONIC_SKUP, {OPKIND_REG}, 1},
-    {"gdelay", MNEMONIC_GDELAY, {OPKIND_REG}, 1},
-    {"sdelay", MNEMONIC_SDELAY, {OPKIND_REG}, 1},
-    {"ssound", MNEMONIC_SSOUND, {OPKIND_REG}, 1},
-    {"adi", MNEMONIC_ADI, {OPKIND_REG}, 1},
-    {"key", MNEMONIC_KEY, {OPKIND_REG}, 1},
-    {"font", MNEMONIC_FONT, {OPKIND_REG}, 1},
-    {"bcd", MNEMONIC_BCD, {OPKIND_REG}, 1},
-    {"str", MNEMONIC_STR, {OPKIND_REG}, 1},
-    {"ldr", MNEMONIC_LDR, {OPKIND_REG}, 1}
+    {"CLS", MNEMONIC_CLS, {0}, 0},
+    {"RTS", MNEMONIC_RTS, {0}, 0},
+    {"JMP", MNEMONIC_JMP, {OPKIND_ADDR}, 1},
+    {"JSR", MNEMONIC_JSR, {OPKIND_ADDR}, 1},
+    {"SKEQ", MNEMONIC_SKEQ, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
+    {"SKNE", MNEMONIC_SKNE, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
+    {"MOV", MNEMONIC_MOV, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
+    {"ADD", MNEMONIC_ADD, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
+    {"SUB", MNEMONIC_SUB, {OPKIND_REG, OPKIND_REG | OPKIND_BYTE}, 2},
+    {"OR", MNEMONIC_OR, {OPKIND_REG, OPKIND_REG}, 2},
+    {"AND", MNEMONIC_AND, {OPKIND_REG, OPKIND_REG}, 2},
+    {"XOR", MNEMONIC_XOR, {OPKIND_REG, OPKIND_REG}, 2},
+    {"SHR", MNEMONIC_SHR, {OPKIND_REG}, 1},
+    {"SHL", MNEMONIC_SHL, {OPKIND_REG}, 1},
+    {"MVI", MNEMONIC_MVI, {OPKIND_ADDR}, 1},
+    {"JMI", MNEMONIC_JMI, {OPKIND_REG, OPKIND_BYTE}, 2},
+    {"RAND", MNEMONIC_RAND, {OPKIND_REG, OPKIND_BYTE}, 2},
+    {"DRAW", MNEMONIC_DRAW, {OPKIND_REG, OPKIND_REG, OPKIND_NIBBLE}, 3},
+    {"SKPR", MNEMONIC_SKPR, {OPKIND_REG}, 1},
+    {"SKUP", MNEMONIC_SKUP, {OPKIND_REG}, 1},
+    {"GDELAY", MNEMONIC_GDELAY, {OPKIND_REG}, 1},
+    {"SDELAY", MNEMONIC_SDELAY, {OPKIND_REG}, 1},
+    {"SSOUND", MNEMONIC_SSOUND, {OPKIND_REG}, 1},
+    {"ADI", MNEMONIC_ADI, {OPKIND_REG}, 1},
+    {"KEY", MNEMONIC_KEY, {OPKIND_REG}, 1},
+    {"FONT", MNEMONIC_FONT, {OPKIND_REG}, 1},
+    {"BCD", MNEMONIC_BCD, {OPKIND_REG}, 1},
+    {"STR", MNEMONIC_STR, {OPKIND_REG}, 1},
+    {"LDR", MNEMONIC_LDR, {OPKIND_REG}, 1}
 };
 
 /* number of mnemonics */
