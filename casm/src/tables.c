@@ -62,7 +62,7 @@ bool get_mnemonic(char *s, MnemonicType type, MnemonicEntry *out) {
     for (size_t k = 0; k < NUM_MNEMONICS; k++) {
         MnemonicEntry entry = mnemonic_table[k];
         if (
-            (s != NULL && strcmp(entry.name, s) == 0) ||
+            (s != NULL && istrcasecmp(entry.name, s) == 0) ||
             (s == NULL && entry.type == type)
         ) {
             *out = entry;
