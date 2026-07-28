@@ -73,7 +73,7 @@ static uint16_t append_xyn(uint16_t word, uint8_t x, uint8_t y, uint8_t n) {
 
 static uint16_t append_xnn(uint16_t word, uint8_t x, uint8_t nn) {
     assert(x <= 0xf);
-    return (word & 0xf000) | (x << 8) | (nn << 4);
+    return (word & 0xf000) | (x << 8) | nn;
 }
 
 static uint16_t append_nnn(uint16_t word, uint16_t nnn) {
