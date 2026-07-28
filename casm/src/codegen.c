@@ -176,6 +176,9 @@ static uint16_t get_word(MnemonicType type, ROP v[]) {
         case MNEMONIC_SSOUND:
             return append_x(OPCODE_SSOUND, v[0].value);
 
+        case MNEMONIC_ADI:
+            return append_x(OPCODE_ADI, v[0].value);
+
         case MNEMONIC_KEY:
             return append_x(OPCODE_KEY, v[0].value);
 
