@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "buffer.h"
 #include "tables.h"
 #include "parser.h"
 #include "arena.h"
@@ -42,16 +43,10 @@ static Value parser_value(Lex *lex) {
 }
 
 static void parser_read_bytes(Lex *lex, uint8_t **out_bytes, size_t *out_count) {
-    size_t capacity = DB_READ_BYTES_ICAP;
-    uint8_t *tmp = malloc(capacity * sizeof(uint8_t));
-    size_t count = 0;
+    ByteBuffer tmp;
+    buf_init(&tmp, DB_READ_BYTES_ICAP);
 
     for (;;) {
-        if (count == capacity) {
-            capacity *= 2;
-            tmp = realloc(tmp, capacity * sizeof(uint8_t));
-        }
-
         Token tk = parser_expect(lex, TK_NUMBER);
         uint16_t value = tk.seminfo.i;
 
@@ -60,7 +55,7 @@ static void parser_read_bytes(Lex *lex, uint8_t **out_bytes, size_t *out_count) 
             exit(EXIT_FAILURE);
         }
 
-        tmp[count++] = (uint8_t)value;
+        buf_write_u8(&tmp, value);
 
         Token next = lex_lookahead(lex);
         if (is_eol(next)) break;
@@ -68,10 +63,10 @@ static void parser_read_bytes(Lex *lex, uint8_t **out_bytes, size_t *out_count) 
         parser_expect(lex, TK_COMMA); // consume TK_COMMA (,) before reading the next byte
     }
 
-    *out_bytes = arena_memcpy(lex->arena, tmp, count);
-    free(tmp);
+    *out_bytes = arena_memcpy(lex->arena, tmp.data, tmp.size);
+    *out_count = tmp.size;
 
-    *out_count = count;
+    buf_free(&tmp);
 }
 
 static Stmt parser_directive_stmt(Lex *lex) {
