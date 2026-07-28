@@ -106,7 +106,7 @@ void sem_check(Semantics *sem, Stmt stmt) {
             }
 
             case OPERAND_REG: {
-                if (expected != OPKIND_REG) {
+                if ((expected & OPKIND_REG) == 0) {
                     fprintf(stderr, "unexpected register in operand %zu in instruction %s at line %zu\n", o + 1, mnemonic.name, stmt.line);
                     exit(EXIT_FAILURE);
                 }
