@@ -62,12 +62,21 @@ void sem_collect(Semantics *sem, Stmt stmt) {
     sem->pc += ast_stmt_size(stmt);
 }
 
-static bool op_range_check(OpKind kind, uint16_t value) {
-    assert(kind == OPKIND_NIBBLE || kind == OPKIND_BYTE || kind == OPKIND_ADDR);
+/* enum with every immediate value combination */
+enum {
+    OPKIND_IMMEDIATE_MASK =
+        OPKIND_NIBBLE |
+        OPKIND_BYTE |
+        OPKIND_ADDR
+};
 
-    return (kind == OPKIND_NIBBLE && value <= 0xf) ||
-        (kind == OPKIND_BYTE && value <= 0xff) ||
-        (kind == OPKIND_ADDR && value <= 0xfff);
+static bool op_range_check(OpKind kind, uint16_t value) {
+    assert((kind & OPKIND_IMMEDIATE_MASK) != 0); // at least one immediate kind flag must be present
+    assert((kind & ~(OPKIND_IMMEDIATE_MASK | OPKIND_REG)) == 0); // dont allow unknown flags
+
+    return ((kind & OPKIND_NIBBLE) != 0 && value <= 0xf) ||
+        ((kind & OPKIND_BYTE) != 0 && value <= 0xff) ||
+        ((kind & OPKIND_ADDR) != 0 && value <= 0xfff);
 }
 
 void sem_check(Semantics *sem, Stmt stmt) {
