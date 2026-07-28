@@ -137,7 +137,7 @@ static uint16_t get_word(MnemonicType type, ROP v[]) {
             return append_xy(OPCODE_OR, v[0].value, v[1].value);
 
         case MNEMONIC_AND:
-            return append_xy(OPCODE_OR, v[0].value, v[1].value);
+            return append_xy(OPCODE_AND, v[0].value, v[1].value);
 
         case MNEMONIC_XOR:
             return append_xy(OPCODE_XOR, v[0].value, v[1].value);
@@ -176,19 +176,19 @@ static uint16_t get_word(MnemonicType type, ROP v[]) {
             return append_x(OPCODE_SSOUND, v[0].value);
 
         case MNEMONIC_KEY:
-            return append_x(OPCODE_SSOUND, v[0].value);
+            return append_x(OPCODE_KEY, v[0].value);
 
         case MNEMONIC_FONT:
-            return append_x(OPCODE_SSOUND, v[0].value);
+            return append_x(OPCODE_FONT, v[0].value);
 
         case MNEMONIC_BCD:
-            return append_x(OPCODE_SSOUND, v[0].value);
+            return append_x(OPCODE_BCD, v[0].value);
 
         case MNEMONIC_STR:
-            return append_x(OPCODE_SSOUND, v[0].value);
+            return append_x(OPCODE_STR, v[0].value);
 
         case MNEMONIC_LDR:
-            return append_x(OPCODE_SSOUND, v[0].value);
+            return append_x(OPCODE_LDR, v[0].value);
 
         case MNEMONIC_SKEQ:
         case MNEMONIC_SKNE:
