@@ -66,7 +66,7 @@ static uint16_t append_xy(uint16_t word, uint8_t x, uint8_t y) {
 }
 
 static uint16_t append_xyn(uint16_t word, uint8_t x, uint8_t y, uint8_t n) {
-    assert((x <= 0xf) && (y <= 0xf) || (n <= 0xf));
+    assert((x <= 0xf) && (y <= 0xf) && (n <= 0xf));
     return (word & 0xf000) | (x << 8) | (x << 4) | n;
 }
 

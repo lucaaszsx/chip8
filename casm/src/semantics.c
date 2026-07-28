@@ -88,6 +88,7 @@ void sem_check(Semantics *sem, Stmt stmt) {
                     fprintf(stderr, "operand %zu of %s in line %zu is out-of-range\n", o + 1, mnemonic.name, stmt.line);
                     exit(EXIT_FAILURE);
                 }
+                break; // just so the compiler doesn't complain
             }
 
             case OPERAND_REG: {
@@ -95,6 +96,7 @@ void sem_check(Semantics *sem, Stmt stmt) {
                     fprintf(stderr, "unexpected register in operand %zu in instruction %s at line %zu\n", o + 1, mnemonic.name, stmt.line);
                     exit(EXIT_FAILURE);
                 }
+                break; // ...
             }
         }
     }
