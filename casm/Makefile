@@ -21,7 +21,8 @@ LD_FLAGS=
 
 # debug/release flags
 ifeq ($(BUILD_TYPE),debug)
-	CC_FLAGS += -g -O0
+	CC_FLAGS += -g -O0 -fsanitize=address
+	LD_FLAGS += -fsanitize=address
 else ifeq ($(BUILD_TYPE),release)
 	CC_FLAGS += -O2
 else
