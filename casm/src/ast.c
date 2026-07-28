@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "ast.h"
 
 size_t ast_stmt_size(const Stmt stmt) {
@@ -11,6 +12,9 @@ size_t ast_stmt_size(const Stmt stmt) {
             return 0;
 
         case STATEMENT_INSTR:
-            return 2;
+           return 2;
+
+        default:
+            assert(0 && "unknown statement type");
     }
 }
