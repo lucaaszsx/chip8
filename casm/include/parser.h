@@ -1,6 +1,13 @@
 #pragma once
 
+#include "buffer.h"
 #include "lex.h"
-#include "ast.h"
 
-bool parser_stmt(Lex *lex, Stmt *out);
+typedef struct {
+    StmtBuffer buffer;
+    Lex *lex;
+} Parser;
+
+void parser_init(Parser *parser, Lex *lex);
+void parser_free(Parser *parser);
+void parser_all(Parser *parser);

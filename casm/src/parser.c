@@ -2,11 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "ast.h"
 #include "buffer.h"
 #include "tables.h"
 #include "parser.h"
 #include "arena.h"
 #include "lex.h"
+
+/* initial quantity to be allocated for storing statements */
+#define STMT_BUFFER_ICAP 64
 
 /* initial quantity to be allocated for reading bytes in the db directive */
 #define DB_READ_BYTES_ICAP 32
@@ -17,8 +21,17 @@
 // PARSER
 //
 
-static Token parser_expect(Lex *lex, TokenType t) {
-    Token tk = lex_next(lex);
+void parser_init(Parser *parser, Lex *lex) {
+    stmt_buf_init(&parser->buffer, STMT_BUFFER_ICAP);
+    parser->lex = lex;
+}
+
+void parser_free(Parser *parser) {
+    stmt_buf_free(&parser->buffer);
+}
+
+static Token parser_expect(Parser *parser, TokenType t) {
+    Token tk = lex_next(parser->lex);
     if (tk.type != t) {
         fprintf(stderr, "%s expected, got %s at %zu:%zu\n", lex_token2str(t), lex_token2str(tk.type), tk.line, tk.column);
         exit(EXIT_FAILURE);
@@ -26,8 +39,8 @@ static Token parser_expect(Lex *lex, TokenType t) {
     return tk;
 }
 
-static Value parser_value(Lex *lex) {
-    Token tk = lex_next(lex);
+static Value parser_value(Parser *parser) {
+    Token tk = lex_next(parser->lex);
 
     switch (tk.type) {
         case TK_IDENTIFIER:
@@ -42,12 +55,12 @@ static Value parser_value(Lex *lex) {
     }
 }
 
-static void parser_read_bytes(Lex *lex, uint8_t **out_bytes, size_t *out_count) {
+static void parser_read_bytes(Parser *parser, uint8_t **out_bytes, size_t *out_count) {
     ByteBuffer tmp;
     buf_init(&tmp, DB_READ_BYTES_ICAP);
 
     for (size_t i = 1; ; i++) {
-        Token tk = parser_expect(lex, TK_NUMBER);
+        Token tk = parser_expect(parser, TK_NUMBER);
         uint16_t value = tk.seminfo.i;
 
         if (value > UINT8_MAX) {
@@ -57,34 +70,34 @@ static void parser_read_bytes(Lex *lex, uint8_t **out_bytes, size_t *out_count) 
 
         buf_write_u8(&tmp, value);
 
-        Token next = lex_lookahead(lex);
+        Token next = lex_lookahead(parser->lex);
         if (is_eol(next)) break;
 
-        parser_expect(lex, TK_COMMA); // consume TK_COMMA (,) before reading the next byte
+        parser_expect(parser, TK_COMMA); // consume TK_COMMA (,) before reading the next byte
     }
 
-    *out_bytes = arena_memcpy(lex->arena, tmp.data, tmp.size);
+    *out_bytes = arena_memcpy(parser->lex->arena, tmp.data, tmp.size);
     *out_count = tmp.size;
 
     buf_free(&tmp);
 }
 
-static Stmt parser_directive_stmt(Lex *lex) {
-    Stmt stmt = {.type=STATEMENT_DIRECTIVE, .line=lex->line};
-    Token tk = parser_expect(lex, TK_IDENTIFIER);
+static Stmt parser_directive_stmt(Parser *parser) {
+    Stmt stmt = {.type=STATEMENT_DIRECTIVE, .line=parser->lex->line};
+    Token tk = parser_expect(parser, TK_IDENTIFIER);
 
     switch ((stmt.drt.type = get_directive_type(tk.seminfo.id))) {
         case DIRECTIVE_ORG:
-            stmt.drt.org = parser_value(lex);
+            stmt.drt.org = parser_value(parser);
             break;
 
         case DIRECTIVE_DB:
-            parser_read_bytes(lex, &stmt.drt.db.bytes, &stmt.drt.db.count);
+            parser_read_bytes(parser, &stmt.drt.db.bytes, &stmt.drt.db.count);
             break;
 
         case DIRECTIVE_EQU:
-            stmt.drt.equ.name = parser_expect(lex, TK_IDENTIFIER).seminfo.id;
-            stmt.drt.equ.value = parser_value(lex);
+            stmt.drt.equ.name = parser_expect(parser, TK_IDENTIFIER).seminfo.id;
+            stmt.drt.equ.value = parser_value(parser);
             break;
 
         case DIRECTIVE_END:
@@ -99,16 +112,16 @@ static Stmt parser_directive_stmt(Lex *lex) {
     return stmt;
 }
 
-static Stmt parser_instr_stmt(Lex *lex, MnemonicEntry mnemonic) {
-    Stmt stmt = {.type=STATEMENT_INSTR, .line=lex->line};
+static Stmt parser_instr_stmt(Parser *parser, MnemonicEntry mnemonic) {
+    Stmt stmt = {.type=STATEMENT_INSTR, .line=parser->lex->line};
     stmt.instr.type = mnemonic.type;
     stmt.instr.op_count = 0;
 
-    Token next = lex_lookahead(lex);
+    Token next = lex_lookahead(parser->lex);
     if (is_eol(next)) goto check_count;
 
     for (;;) {
-        Token tk = lex_next(lex);
+        Token tk = lex_next(parser->lex);
 
         if (stmt.instr.op_count == NUM_INSTR_OPS) {
             fprintf(stderr, "too many operands at %zu:%zu\n", tk.line, tk.column);
@@ -135,10 +148,10 @@ static Stmt parser_instr_stmt(Lex *lex, MnemonicEntry mnemonic) {
 
         stmt.instr.op_count++;
 
-        next = lex_lookahead(lex);
+        next = lex_lookahead(parser->lex);
         if (is_eol(next)) break;
 
-        parser_expect(lex, TK_COMMA);
+        parser_expect(parser, TK_COMMA);
     }
 
     check_count:
@@ -150,32 +163,32 @@ static Stmt parser_instr_stmt(Lex *lex, MnemonicEntry mnemonic) {
     return stmt;
 }
 
-bool parser_stmt(Lex *lex, Stmt *out) {
+static bool parser_stmt(Parser *parser, Stmt *out) {
     Token tk;
     do {
-        tk = lex_next(lex);
+        tk = lex_next(parser->lex);
     } while (tk.type == TK_NEWLINE);
 
     if (tk.type == TK_EOS) return false;
 
     switch (tk.type) {
         case TK_DOT:
-            *out = parser_directive_stmt(lex);
+            *out = parser_directive_stmt(parser);
             break;
 
         case TK_IDENTIFIER: {
             MnemonicEntry mnemonic;
 
-            if (lex_lookahead(lex).type == TK_COLON) {
-                lex_next(lex); // consume TK_COLON (:)
+            if (lex_lookahead(parser->lex).type == TK_COLON) {
+                lex_next(parser->lex); // consume TK_COLON (:)
                 *out = (Stmt){
                     .type=STATEMENT_LABEL,
                     .label=(LabelStmt){.name=tk.seminfo.id},
-                    .line=lex->line
+                    .line=parser->lex->line
                 };
                 break;
             } else if (get_mnemonic(tk.seminfo.id, -1, &mnemonic)) {
-                *out = parser_instr_stmt(lex, mnemonic);
+                *out = parser_instr_stmt(parser, mnemonic);
                 break;
             }
 
@@ -192,11 +205,17 @@ bool parser_stmt(Lex *lex, Stmt *out) {
             exit(EXIT_FAILURE);
     }
 
-    Token next = lex_next(lex);
+    Token next = lex_next(parser->lex);
     if (!is_eol(next)) {
         fprintf(stderr, "unexpected %s at the end of the statement at %zu:%zu\n", lex_token2str(next.type), next.line, next.column);
         exit(EXIT_FAILURE);
     }
 
     return true;
+}
+
+void parser_all(Parser *parser) {
+    Stmt stmt;
+    while (parser_stmt(parser, &stmt))
+        stmt_buf_push(&parser->buffer, stmt);
 }
