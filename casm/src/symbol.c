@@ -21,7 +21,7 @@ void symbol_tfree(SymbolTable *table) {
 }
 
 bool symbol_define(SymbolTable *table, SymbolType type, const char *name, uint16_t address) {
-    if (!symbol_lookup(table, name, NULL))
+    if (symbol_lookup(table, name, NULL))
         return false;
 
     if (table->count == table->capacity) {
