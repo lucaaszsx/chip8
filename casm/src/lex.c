@@ -45,7 +45,7 @@ static uint16_t lex_read_digits(Lex *lex, int base, const Token *tk) {
         result = result * base + (base == 16 ? hexvalue(digit) : digit - '0');
 
         if (result > UINT12_MAX) {
-            fprintf(stderr, "number out-of-range (0x%03x) at %zu:%zu\n", UINT12_MAX, tk->line, tk->column);
+            fprintf(stderr, "number out of range 0x%03x at %zu:%zu\n", UINT12_MAX, tk->line, tk->column);
             exit(EXIT_FAILURE);
         }
     }
