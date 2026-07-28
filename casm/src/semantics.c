@@ -92,6 +92,11 @@ void sem_check(Semantics *sem, Stmt stmt) {
 
         switch (op.type) {
             case OPERAND_VALUE: {
+                if ((expected & OPKIND_IMMEDIATE_MASK) == 0) {
+                    fprintf(stderr, "unexpected value in operand %zu in instruction %s at line %zu\n", o + 1, mnemonic.name, stmt.line);
+                    exit(EXIT_FAILURE);
+                }
+
                 uint16_t value = resolve_value(sem, op.value);
                 if (!op_range_check(expected, value)) {
                     fprintf(stderr, "operand %zu of %s in line %zu is out-of-range\n", o + 1, mnemonic.name, stmt.line);
