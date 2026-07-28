@@ -12,4 +12,4 @@ typedef struct {
 
 void cg_init(CG *cg, SymbolTable *table);
 void cg_free(CG *cg);
-void cg_emit_instr(CG *cg, InstrStmt instr);
+void cg_emit_stmt(CG *cg, Stmt stmt);
