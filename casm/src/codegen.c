@@ -244,9 +244,21 @@ void cg_emit_stmt(CG *cg, Stmt stmt) {
         }
 
         case STATEMENT_DIRECTIVE: {
-            if (stmt.drt.type == DIRECTIVE_DB) {
-                for (size_t i = 0; i < stmt.drt.db.count; i++)
-                    cg_emit_byte(cg, stmt.drt.db.bytes[i]);
+            switch (stmt.drt.type) {
+                case DIRECTIVE_ORG: {
+                    cg->pc = resolve_value(cg, stmt.drt.org);
+                    break;
+                }
+
+                case DIRECTIVE_DB: {
+                    for (size_t i = 0; i < stmt.drt.db.count; i++) {
+                        cg_emit_byte(cg, stmt.drt.db.bytes[i]);
+                    }
+                    break;
+                }
+
+                default:
+                    break;
             }
             break;
         }
