@@ -51,7 +51,7 @@ void sem_collect(Semantics *sem, Stmt stmt) {
                     /* theres nothing to be resolved */
                     break;
             }
-            return;
+            break;
         }
 
         case STATEMENT_INSTR:
