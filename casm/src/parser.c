@@ -216,6 +216,12 @@ static bool parser_stmt(Parser *parser, Stmt *out) {
 
 void parser_all(Parser *parser) {
     Stmt stmt;
-    while (parser_stmt(parser, &stmt))
+    while (parser_stmt(parser, &stmt) && !parser->ended) {
+        // stops reading statements when reaches ".end" directive
+        if (stmt.type == STATEMENT_DIRECTIVE && stmt.drt.type == DIRECTIVE_END) {
+            parser->ended = true;
+            return;
+        }
         stmt_buf_push(&parser->buffer, stmt);
+    }
 }
