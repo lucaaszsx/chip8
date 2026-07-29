@@ -6,3 +6,5 @@ bin/
 # Misc
 compile_commands.json
 .zed
+*notes*
+*.new.md
