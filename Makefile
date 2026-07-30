@@ -18,6 +18,6 @@ casm:
 
 clean:
 	rm -rf $(BUILD)
-	rm -rf $(BIN)
+	rm -f $(BIN)/cemu $(BIN)/casm
 
 .PHONY: all debug release cemu casm
