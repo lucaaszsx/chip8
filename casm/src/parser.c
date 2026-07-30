@@ -24,6 +24,7 @@
 void parser_init(Parser *parser, Lex *lex) {
     stmt_buf_init(&parser->buffer, STMT_BUFFER_ICAP);
     parser->lex = lex;
+    parser->ended = false;
 }
 
 void parser_free(Parser *parser) {
