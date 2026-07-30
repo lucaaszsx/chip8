@@ -10,13 +10,64 @@
 
 #define UINT12_MAX 0xfff /* 0x000..0xfff */
 
-static char lex_advance(Lex *lex);
-static char lex_skip(Lex *lex, size_t n);
-static char lex_peek(Lex *lex);
-static char lex_peeknext(Lex *lex);
-static void lex_skip_trivia(Lex *lex);
-static bool eos(Lex *lex);
-static bool is_delimiter(char c);
+static char lex_peek(Lex *lex) {
+    return lex->src[lex->pos];
+}
+
+static inline bool eos(Lex *lex) {
+    return lex_peek(lex) == '\0';
+}
+
+static char lex_advance(Lex *lex) {
+    if (eos(lex)) return '\0';
+
+    char c = lex->src[lex->pos++];
+    if (c == '\n') {
+        lex->column = 0;
+        lex->line++;
+    } else lex->column++;
+
+    return c;
+}
+
+static char lex_skip(Lex *lex, size_t n) {
+    char c = lex_peek(lex);
+
+    for (size_t j = 0; j < n; j++) lex_advance(lex);
+
+    return c;
+}
+
+static char lex_peeknext(Lex *lex) {
+    if (eos(lex)) return '\0';
+    return lex->src[lex->pos + 1];
+}
+
+static bool is_nonnewline_space(char c) {
+    return c == ' ' || c == '\t' || c == '\v' || c == '\f' || c == '\r';
+}
+
+static void lex_skip_trivia(Lex *lex) {
+    while (true) {
+        if (is_nonnewline_space(lex_peek(lex))) lex_skip(lex, 1);
+        else if (lex_peek(lex) == ';') { // skip single-line comments
+            while (!eos(lex) && lex_peek(lex) != '\n')
+                lex_skip(lex, 1);
+        } else break;
+    }
+}
+
+static bool is_delimiter(char c) {
+    switch (c) {
+        case ':':
+        case ',':
+        case '.':
+            return true;
+
+        default:
+            return false;
+    }
+}
 
 void lex_init(Lex *lex, ArenaAllocator *arena, const char *src) {
     lex->arena = arena;
@@ -157,63 +208,3 @@ const char *lex_token2str(TokenType type) {
             return "unknown";
     }
 }
-
-static char lex_advance(Lex *lex) {
-    if (eos(lex)) return '\0';
-
-    char c = lex->src[lex->pos++];
-    if (c == '\n') {
-        lex->column = 0;
-        lex->line++;
-    } else lex->column++;
-
-    return c;
-}
-
-static char lex_skip(Lex *lex, size_t n) {
-    char c = lex_peek(lex);
-
-    for (size_t j = 0; j < n; j++) lex_advance(lex);
-
-    return c;
-}
-
-static char lex_peek(Lex *lex) {
-    return lex->src[lex->pos];
-}
-
-static char lex_peeknext(Lex *lex) {
-    if (eos(lex)) return '\0';
-    return lex->src[lex->pos + 1];
-}
-
-static bool is_nonnewline_space(char c) {
-    return c == ' ' || c == '\t' || c == '\v' || c == '\f' || c == '\r';
-}
-
-static void lex_skip_trivia(Lex *lex) {
-    while (true) {
-        if (is_nonnewline_space(lex_peek(lex))) lex_skip(lex, 1);
-        else if (lex_peek(lex) == ';') { // skip single-line comments
-            while (!eos(lex) && lex_peek(lex) != '\n')
-                lex_skip(lex, 1);
-        } else break;
-    }
-}
-
-static bool eos(Lex *lex) {
-    return lex_peek(lex) == '\0';
-}
-
-static bool is_delimiter(char c) {
-    switch (c) {
-        case ':':
-        case ',':
-        case '.':
-            return true;
-
-        default:
-            return false;
-    }
-}
-
