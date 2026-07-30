@@ -2,7 +2,7 @@
 BUILD=./build
 BIN=./bin
 
-all: debug
+all: cemu casm
 
 debug:
 	$(MAKE) BUILD_TYPE=debug cemu casm
