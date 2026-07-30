@@ -108,7 +108,7 @@ CHIP-8 is an interpreted language that was developed by Joseph Weisbecker in 197
 
 # Assembler (CASM)
 
-CASM has support for 4 directives and 29 mnemonics that you can use for ROMs development. The full specification containing detailed information for the Assembly syntax and code structuing rules can be acessed [here](./CASM.md).
+CASM has support for 4 directives and 29 mnemonics that you can use for ROMs development. The full specification containing detailed information for the Assembly syntax and code structuing rules can be acessed [here](./docs/CASM.md).
 
 ## Example ROMs
 
