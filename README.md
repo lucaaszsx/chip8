@@ -33,17 +33,19 @@ CHIP-8 is an interpreted language that was developed by Joseph Weisbecker in 197
 ## VM Description
 
 - **Memory:** 4KB (4,096 bytes)
-- **Registers:** 16 8-bit registers (V0..V15 or V0..VF)
+- **Registers:** 
+    - 16x 8-bit GPRs (V0..V15 or V0..VF)
+    - 1x 12-bit index register to point at addresses
 - **Stack:** used to store the PC (Program Counter) address when a subroutine is called, so the execution resumes at that address after the subroutine returns
 - **Timers:** 2 8-bit timers
-    - **Delay timer:** used for timing in game events
-    - **Sound timer:** used for sound effects
+    - **Delay timer (DT):** used for timing in game events
+    - **Sound timer (ST):** used for sound effects
 - **Graphics:** a 64x32 (2,048 pixels) monochromatic screen
-- **Sound:** when the sound timer reaches 0, a beep is made
+- **Sound:** when the ST value is nonzero, a beeping sound is made
 - **Opcodes:** original CHIP-8 has 35 opcodes, which are all two bytes long stored in [big-endian](https://en.wikipedia.org/wiki/Endianness) at memory
 
 > [!WARNING]
-> In this emulator, I implemented 34 of the 35 original instructions, given that the unimplemented instruction (`0NNN`, or `sys`) was used to execute machine code outside the Chip-8 interpreter, something that would not be useful in this context and is not required for most ROMs.
+> In this project, I implemented 34 of the 35 original instructions, given that the unimplemented instruction (`0NNN`, or `sys`) was used to execute machine code outside the Chip-8 interpreter, something that would not be useful in this context and is not required for most ROMs.
 
 # Emulator (CEMU)
 
@@ -223,13 +225,13 @@ The assembler requires an input source file and an output file specified with `-
 For example:
 
 ```bash
-./bin/casm ./examples/pong.asm -o ./build/pong.ch8
+./bin/casm ./asm/pong.s -o ./roms/my_roms/pong.ch8
 ```
 
 The generated binary can then be executed with the emulator:
 
 ```bash
-./bin/cemu ./build/pong.ch8
+./bin/cemu ./roms/my_roms/pong.ch8
 ```
 
 # Contributing
