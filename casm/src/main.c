@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <errno.h>
 #include "pipe.h"
 
 static char *read_file(const char *path) {
@@ -92,15 +93,27 @@ int main(int argc, char **argv) {
     Pipe pipe;
     ByteBuffer *buffer = pipe_run(&pipe, source);
 
-    // writes the output on specified file
-    fwrite(buffer->data, sizeof(uint8_t), buffer->size, out);
+    int status = EXIT_SUCCESS;
 
-    printf("%zu bytes written to '%s'\n", buffer->size, out_path);
+    // writes the output on specified file
+    size_t written = fwrite(buffer->data, sizeof(uint8_t), buffer->size, out);
+
+    if (written != buffer->size) {
+        fprintf(stderr, "failed to write to '%s': ", out_path);
+        if (ferror(out))
+            fprintf(stderr, "%s\n", strerror(errno));
+        else
+            fprintf(stderr, "incomplete write (%zu/%zu bytes)\n", written, buffer->size);
+
+        status = EXIT_FAILURE;
+        goto cleanup;
+    } else printf("%zu bytes written to '%s'\n", buffer->size, out_path);
 
     // clear memory
+    cleanup:
     pipe_free(&pipe);
     fclose(out);
     free(source);
 
-    return EXIT_SUCCESS;
+    return status;
 }
