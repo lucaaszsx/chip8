@@ -86,21 +86,21 @@ CHIP-8 is an interpreted language that was developed by Joseph Weisbecker in 197
 <table align="center">
     <tr>
         <td align="center">
-            <strong><a href="https://github.com/Timendus/chip8-test-suite#corax-opcode-test">Corax+ opcode test</a></strong>
+            <strong><a href="https://github.com/Timendus/chip8-test-suite#corax-opcode-test">Corax+ opcode test</a></strong><br>
             <img src="assets/tests/corax+_test.png" width="200">
         </td>
         <td align="center">
-            <strong><a href="https://github.com/Timendus/chip8-test-suite#flags-test">Flags test</a></strong>
+            <strong><a href="https://github.com/Timendus/chip8-test-suite#flags-test">Flags test</a></strong><br>
             <img src="assets/tests/flags_test.png" width="200">
         </td>
     </tr>
     <tr>
         <td align="center">
-            <strong><a href="https://github.com/Timendus/chip8-test-suite#keypad-test">Keypad test</a></strong>
+            <strong><a href="https://github.com/Timendus/chip8-test-suite#keypad-test">Keypad test</a></strong><br>
             <img src="assets/tests/keypad_test.png" width="200">
         </td>
         <td align="center">
-            <strong><a href="https://github.com/Timendus/chip8-test-suite#beep-test">Beep test</a></strong>
+            <strong><a href="https://github.com/Timendus/chip8-test-suite#beep-test">Beep test</a></strong><br>
             <img src="assets/tests/beep_test.png" width="200">
         </td>
     </tr>
