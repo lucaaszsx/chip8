@@ -11,8 +11,8 @@ start:
     mov v0, 0
 
     ; define number position on screen
-    mov v1, 29 ; x
-    mov v2, 13 ; y
+    mov v1, DIGIT_X ; x
+    mov v2, DIGIT_Y ; y
 
     ; first loop call
     jsr loop
