@@ -211,11 +211,26 @@ To run ROMs using the emulator, you can download compatible ROMs or use one of t
 
 ### Options
 
-TODO
+| Option             | Argument         | Description                                | Default |
+|--------------------|------------------|--------------------------------------------|---------|
+| `-h`, `--help`     | —                | Display the help message and exit.         | — |
+| `-o`, `--output`   | `<file>`         | Path to the output ROM file.               | — |
 
 ### Usage
 
-TODO
+The assembler requires an input source file and an output file specified with `-o` (or `--output`).
+
+For example:
+
+```bash
+./bin/casm ./examples/pong.asm -o ./build/pong.ch8
+```
+
+The generated binary can then be executed with the emulator:
+
+```bash
+./bin/cemu ./build/pong.ch8
+```
 
 # Contributing
 
