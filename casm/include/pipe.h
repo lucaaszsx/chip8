@@ -4,6 +4,7 @@
 #include "codegen.h"
 #include "symbol.h"
 #include "parser.h"
+#include "buffer.h"
 #include "arena.h"
 #include "lex.h"
 
@@ -16,4 +17,5 @@ typedef struct {
     CG cg;
 } Pipe;
 
-void pipe_run(Pipe *pipe, const char *src);
+ByteBuffer *pipe_run(Pipe *pipe, const char *src);
+void pipe_free(Pipe *pipe);

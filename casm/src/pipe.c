@@ -1,7 +1,7 @@
-#include "pipe.h"
 #include <stdio.h>
+#include "pipe.h"
 
-void pipe_run(Pipe *pipe, const char *src) {
+ByteBuffer *pipe_run(Pipe *pipe, const char *src) {
     arena_init(&pipe->arena);
     lex_init(&pipe->lex, &pipe->arena, src);
     parser_init(&pipe->parser, &pipe->lex);
@@ -26,16 +26,12 @@ void pipe_run(Pipe *pipe, const char *src) {
     for (size_t i = 0; i < stmt_count; i++)
         cg_emit_stmt(&pipe->cg, stmts[i]);
 
-    uint8_t *bytes = pipe->cg.buffer.data;
-    printf("%zu bytes\n", pipe->cg.buffer.size);
-    for (size_t i = 0; i < pipe->cg.buffer.size; i += 2)
-        printf("0x%04x\n", (bytes[i] << 8) | bytes[i + 1]);
+    return &pipe->cg.buffer;
+}
 
-    // free memory
+void pipe_free(Pipe *pipe) {
     cg_free(&pipe->cg);
     symbol_tfree(&pipe->table);
     parser_free(&pipe->parser);
     arena_free(&pipe->arena);
-
-    printf("run successfully. now you can sleep.\n");
 }
