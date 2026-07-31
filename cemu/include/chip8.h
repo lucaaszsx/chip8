@@ -1,5 +1,4 @@
-#ifndef CHIP_H
-#define CHIP_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -60,5 +59,3 @@ void chip8_load_rom(struct Chip8 *chip, const uint8_t *rom, size_t rom_length);
 void chip8_cycle(struct Chip8 *chip);
 void chip8_update_timers(struct Chip8 *chip);
 void chip8_destroy(struct Chip8 *chip);
-
-#endif

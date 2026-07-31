@@ -1,5 +1,4 @@
-#ifndef DISPLAY_H
-#define DISPLAY_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -16,5 +15,3 @@ struct Chip8Display {
 
 void chip8_display_reset(struct Chip8Display *display);
 uint8_t chip8_display_draw(struct Chip8Display *display, uint8_t x, uint8_t y, uint8_t n, uint8_t *sprite);
-
-#endif

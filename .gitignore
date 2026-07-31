@@ -1,5 +1,10 @@
 # Build Files
 build/
+bin/
 *.o
-chip8
+
+# Misc
 compile_commands.json
+.zed
+*notes*
+*.new.md
