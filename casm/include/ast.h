@@ -14,6 +14,7 @@ typedef enum {
     MNEMONIC_MOV,
     MNEMONIC_ADD,
     MNEMONIC_SUB,
+    MNEMONIC_RSB,
     MNEMONIC_OR,
     MNEMONIC_AND,
     MNEMONIC_XOR,

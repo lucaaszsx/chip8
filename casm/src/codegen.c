@@ -16,8 +16,8 @@
 #define OPCODE_MOV_R 0x8000 // 0x8XY0
 #define OPCODE_ADD_I 0x7000 // 0x7XNN
 #define OPCODE_ADD_R 0x8004 // 0x8XY4
-#define OPCODE_SUB_I 0x8005 // 0x8XY5
-#define OPCODE_SUB_R 0x8007 // 0x8XY7
+#define OPCODE_SUB 0x8005 // 0x8XY5
+#define OPCODE_RSB 0x8007 // 0x8XY7
 #define OPCODE_OR 0x8001 // 0x8XY1
 #define OPCODE_AND 0x8002 // 0x8XY2
 #define OPCODE_XOR 0x8003 // 0x8XY3
@@ -108,10 +108,6 @@ static uint16_t get_word_dual_op(MnemonicType type, ROP v[]) {
             opcode = has_gpr ? OPCODE_ADD_R : OPCODE_ADD_I;
             break;
 
-        case MNEMONIC_SUB:
-            opcode = has_gpr ? OPCODE_SUB_R : OPCODE_SUB_I;
-            break;
-
         default:
             assert(0 && "mnemonic without double operands");
     }
@@ -133,6 +129,12 @@ static uint16_t get_word(MnemonicType type, ROP v[]) {
 
         case MNEMONIC_JSR:
             return append_nnn(OPCODE_JSR, v[0].value);
+
+        case MNEMONIC_SUB:
+            return append_xy(OPCODE_SUB, v[0].value, v[1].value);
+
+        case MNEMONIC_RSB:
+            return append_xy(OPCODE_RSB, v[0].value, v[1].value);
 
         case MNEMONIC_OR:
             return append_xy(OPCODE_OR, v[0].value, v[1].value);
@@ -198,7 +200,6 @@ static uint16_t get_word(MnemonicType type, ROP v[]) {
         case MNEMONIC_SKNE:
         case MNEMONIC_MOV:
         case MNEMONIC_ADD:
-        case MNEMONIC_SUB:
             return get_word_dual_op(type, v);
 
         default:
