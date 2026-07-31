@@ -192,7 +192,7 @@ make clean
 | `--width`         | `<pixels>`         | Window width in pixels. | `640` |
 | `--height`        | `<pixels>`         | Window height in pixels. | `320` |
 | `--window`        | `<width>x<height>` | Set both window dimensions using a single argument. | `640x320` |
-| `--bg`            | `<RRGGBB>`         | Background color in hexadecimal RGB format (without `#`). | `0x8bacf` |
+| `--bg`            | `<RRGGBB>`         | Background color in hexadecimal RGB format (without `#`). | `0x8bac0f` |
 | `--fg`            | `<RRGGBB>`         | Foreground (pixel) color in hexadecimal RGB format (without `#`). | `0x306230` |
 | `--freq`          | `<Hz>`             | Audio sample rate. | `44100` |
 | `--volume`        | `<0.0-1.0>`        | Audio volume. | `1.0` |
