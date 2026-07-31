@@ -23,7 +23,7 @@ static char lex_advance(Lex *lex) {
 
     char c = lex->src[lex->pos++];
     if (c == '\n') {
-        lex->column = 0;
+        lex->column = 1;
         lex->line++;
     } else lex->column++;
 
