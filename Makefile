@@ -1,6 +1,7 @@
 # folders
 BUILD=./build
 BIN=./bin
+BUILD_TYPE ?= DEBUG
 
 all: cemu casm
 
