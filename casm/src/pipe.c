@@ -1,13 +1,14 @@
 #include <stdio.h>
+#include "codegen.h"
+#include "buffer.h"
 #include "pipe.h"
 
-ByteBuffer *pipe_run(Pipe *pipe, const char *src) {
+void pipe_run(Pipe *pipe, const char *src, ByteBuffer *out) {
     arena_init(&pipe->arena);
     lex_init(&pipe->lex, &pipe->arena, src);
     parser_init(&pipe->parser, &pipe->lex);
     symbol_tinit(&pipe->table);
     sem_init(&pipe->sem, &pipe->table);
-    cg_init(&pipe->cg, &pipe->table);
 
     // - step 01: fetch all statements and fill symbol table
     parser_all(&pipe->parser);
@@ -24,13 +25,10 @@ ByteBuffer *pipe_run(Pipe *pipe, const char *src) {
 
     // --- step 03: generate opcodes
     for (size_t i = 0; i < stmt_count; i++)
-        cg_emit_stmt(&pipe->cg, stmts[i]);
-
-    return &pipe->cg.buffer;
+        cg_emit_stmt(&pipe->table, stmts[i], out);
 }
 
 void pipe_free(Pipe *pipe) {
-    cg_free(&pipe->cg);
     symbol_tfree(&pipe->table);
     parser_free(&pipe->parser);
     arena_free(&pipe->arena);

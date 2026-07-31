@@ -1,7 +1,5 @@
 #include <assert.h>
 #include "codegen.h"
-#include "ast.h"
-#include "buffer.h"
 
 /* opcodes */
 #define OPCODE_CLS 0x00e0 // 0x00E0
@@ -41,20 +39,6 @@
 
 /* initial quantity to be allocated for rom buffer */
 #define CG_BUFFER_ICAP 1024
-
-void cg_init(CG *cg, SymbolTable *table) {
-    buf_init(&cg->buffer, CG_BUFFER_ICAP);
-
-    cg->table = table;
-    cg->pc = 0;
-}
-
-void cg_free(CG *cg) {
-    buf_free(&cg->buffer);
-
-    cg->table = NULL;
-    cg->pc = 0;
-}
 
 static uint16_t append_x(uint16_t word, uint8_t x) {
     assert(x <= 0xf); // nibble check
@@ -207,21 +191,13 @@ static uint16_t get_word(MnemonicType type, ROP v[]) {
     }
 }
 
-static uint16_t resolve_value(const CG *cg, const Value value) {
+static uint16_t resolve_value(const SymbolTable *table, const Value value) {
     uint16_t result;
-    assert(symbol_resolve_value(cg->table, value, &result));
+    assert(symbol_resolve_value(table, value, &result));
     return result;
 }
 
-static void cg_emit_byte(CG *cg, uint8_t byte) {
-    buf_write_u8(&cg->buffer, byte);
-}
-
-static void cg_emit_word(CG *cg, uint16_t word) {
-    buf_write_u16(&cg->buffer, word);
-}
-
-void cg_emit_stmt(CG *cg, Stmt stmt) {
+void cg_emit_stmt(SymbolTable *table, Stmt stmt, ByteBuffer *out) {
     switch (stmt.type) {
         case STATEMENT_INSTR: {
             InstrStmt instr = stmt.instr;
@@ -235,25 +211,20 @@ void cg_emit_stmt(CG *cg, Stmt stmt) {
                         v[o] = (ROP){.type=op.type, .value=op.reg};
                         break;
                     case OPERAND_VALUE:
-                        v[o] = (ROP){.type=op.type, .value=resolve_value(cg, op.value)};
+                        v[o] = (ROP){.type=op.type, .value=resolve_value(table, op.value)};
                         break;
                 }
             }
     
-            cg_emit_word(cg, get_word(instr.type, v));
+            buf_write_u16(out, get_word(instr.type, v));
             break;
         }
 
         case STATEMENT_DIRECTIVE: {
             switch (stmt.drt.type) {
-                case DIRECTIVE_ORG: {
-                    cg->pc = resolve_value(cg, stmt.drt.org);
-                    break;
-                }
-
                 case DIRECTIVE_DB: {
                     for (size_t i = 0; i < stmt.drt.db.count; i++) {
-                        cg_emit_byte(cg, stmt.drt.db.bytes[i]);
+                        buf_write_u8(out, stmt.drt.db.bytes[i]);
                     }
                     break;
                 }
@@ -268,6 +239,4 @@ void cg_emit_stmt(CG *cg, Stmt stmt) {
             /* does nothing */
             break;
     }
-
-    cg->pc += ast_stmt_size(stmt);
 }
