@@ -2,7 +2,7 @@
 BUILD=./build
 BIN=./bin
 
-all: debug
+all: cemu casm
 
 debug:
 	$(MAKE) BUILD_TYPE=debug cemu casm
@@ -18,6 +18,6 @@ casm:
 
 clean:
 	rm -rf $(BUILD)
-	rm -rf $(BIN)
+	rm -f $(BIN)/cemu $(BIN)/casm
 
 .PHONY: all debug release cemu casm
