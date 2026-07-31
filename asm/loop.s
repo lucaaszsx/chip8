@@ -2,18 +2,17 @@
 
 .equ FONT_HEIGHT 5
 
-start:          ; entry point
-    mov v0, 0   ; loop index counter
-    mov v1, 20  ; loop max iterations
-    skeq v0, v1 ; skip if loop already fisnish (v0=v1)
-    add v0, 1   ; increments loop by 1
+start:           ; entry point
+    mov v0, 0    ; loop counter
+    mov v1, 0xfe ; max iterations
 
-    ; draw "1" for the user (feedback)
-    mov v2, 0                ; x
-    mov v3, 0                ; y
-    mov v4, 1                ; wanted char to be displayed
-    font v4                  ; sets I to address to the sprite
-    draw v2, v3, FONT_HEIGHT ; draws the character
+loop:
+    skne v0, v1 ; skip if v0 isn't equals to v1
+    jmp end
+
+    ; loop logic
+    add v0, 1 ; increments the counter
+    jmp loop
 
 end:
     jmp end
