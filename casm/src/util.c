@@ -21,7 +21,7 @@ void *xrealloc(void *ptr, size_t size) {
     return p;
 }
 
-bool istrcasecmp(const char *s1, const char *s2) {
+int istrcasecmp(const char *s1, const char *s2) {
     while (*s1 && (tolower((unsigned char)*s1) == tolower((unsigned char)*s2))) {
         s1++;
         s2++;
