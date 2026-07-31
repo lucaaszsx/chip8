@@ -24,7 +24,7 @@
 #define OPCODE_SHR 0x8006 // 0x8XY6
 #define OPCODE_SHL 0x800e // 0x8XYE
 #define OPCODE_MVI 0xa000 // 0xANNN
-#define OPCODE_JMI 0xb000 // 0xBNNN
+#define OPCODE_JMI 0xb000 // 0xBXNN
 #define OPCODE_RAND 0xc000 // 0xCXNN
 #define OPCODE_DRAW 0xd000 // 0xDXYN
 #define OPCODE_SKPR 0xe09e // 0xEX9E
@@ -153,7 +153,7 @@ static uint16_t get_word(MnemonicType type, ROP v[]) {
             return append_nnn(OPCODE_MVI, v[0].value);
 
         case MNEMONIC_JMI:
-            return append_nnn(OPCODE_JMI, v[0].value);
+            return append_xnn(OPCODE_JMI, v[0].value, v[1].value);
 
         case MNEMONIC_RAND:
             return append_xnn(OPCODE_RAND, v[0].value, v[1].value);
