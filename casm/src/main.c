@@ -6,6 +6,9 @@
 #include "buffer.h"
 #include "pipe.h"
 
+/* initial quantity to be allocated for rom buffer */
+#define ROM_BUFFER_ICAP 1024
+
 static char *read_file(const char *path) {
     FILE *file = fopen(path, "rb");
     if (!file)
@@ -93,7 +96,7 @@ int main(int argc, char **argv) {
     // runs the pipeline
     Pipe pipe;
     ByteBuffer buffer;
-    buf_init(&buffer, 1024);
+    buf_init(&buffer, ROM_BUFFER_ICAP);
     pipe_run(&pipe, source, &buffer);
 
     int status = EXIT_SUCCESS;

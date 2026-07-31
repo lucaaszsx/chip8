@@ -37,9 +37,6 @@
 #define OPCODE_STR 0xf055 // 0xFX55
 #define OPCODE_LDR 0xf065 // 0xFX65
 
-/* initial quantity to be allocated for rom buffer */
-#define CG_BUFFER_ICAP 1024
-
 static uint16_t append_x(uint16_t word, uint8_t x) {
     assert(x <= 0xf); // nibble check
     return (word & 0xf0ff) | (x << 8);
