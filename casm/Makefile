@@ -32,8 +32,9 @@ endif
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
+$(TARGET): $(OBJ)
+	@ mkdir -p $(dir $@)
 	$(CC) $^ $(LD_FLAGS) -o $@
-
 $(BUILD_OBJ)/%.o: $(SRC)/%.c
 	@ mkdir -p $(dir $@)
 	$(CC) $< $(CC_FLAGS) -o $@
